@@ -1,0 +1,55 @@
+# 规则包 · 赛季累充（和放置活动那套规则完全不同，但引擎一模一样）
+# 这条也说明：规则属于数据集，不属于产品。换品类换规则包，不换代码。
+
+pack:
+  id: PACK_SEASON_ACCUMULATE
+  version: "0.1"
+
+rules:
+  - id: A-01
+    name: 档位金额递增
+    level: 阻断
+    source: eng
+    desc: 五个档位的充值金额必须严格递增
+    when: tiers.T1.amount < tiers.T2.amount < tiers.T3.amount < tiers.T4.amount < tiers.T5.amount
+    message: 档位金额没有严格递增（常见于调价后漏改其中一档）
+
+  - id: A-02
+    name: 低档积分不低于面值 10 倍
+    level: 高
+    source: oral
+    desc: 6 元档返 60 积分，即 1 元 = 10 积分，作为最低保障
+    when: tiers.T1.reward_points >= tiers.T1.amount * 10
+    message: 低档积分低于 1:10 的保底线
+
+  - id: A-03
+    name: 顶档唯一
+    level: 阻断
+    source: oral
+    desc: 顶档每人限购 1 次
+    when: tiers.T5.count == 1
+    message: 顶档次数不等于 1
+
+  - id: A-04
+    name: 开服天数满足开放门槛
+    level: 高
+    source: oral
+    desc: 开服满 14 天才开放
+    when: activity.server_open_days >= activity.open_day_min
+    message: 开服天数未达开放门槛
+
+  - id: A-05
+    name: 下游引用字段必须存在
+    level: 阻断
+    source: eng
+    desc: 下游对象声明的引用路径必须能在配置里解析
+    when: m.unresolved_refs == 0
+    message: 有下游对象引用了不存在的字段
+
+  - id: A-06
+    name: 档位数量与设计稿一致
+    level: 中
+    source: eng
+    desc: 本期设计稿定的是 5 档，档位数不能多也不能少
+    when: m.tier_count == 5
+    message: 档位数量与设计稿（5 档）不一致

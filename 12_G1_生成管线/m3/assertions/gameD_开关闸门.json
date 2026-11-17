@@ -1,0 +1,15 @@
+{
+  "game": "gameD_开关闸门",
+  "scenarios": [
+    { "kind": "mechanism", "name": "D-L0 踏板开→关往返（a 开闸 / x 关闸）", "level": 0, "moves": "RRLLDDRR",
+      "assertions": [
+        { "afterStep": 2, "type": "var", "key": "ga", "value": 1 },
+        { "afterStep": 8, "type": "var", "key": "ga", "value": 0 },
+        { "type": "win", "value": false } ] },
+    { "kind": "path-replay", "name": "D-L0 踏板开闸通关（显式路径重放）", "level": 0, "moves": "RRRRRR",
+      "assertions": [
+        { "afterStep": 2, "type": "var", "key": "ga", "value": 1 },
+        { "afterStep": 4, "type": "moved", "value": true },
+        { "type": "win", "value": true } ] }
+  ]
+}

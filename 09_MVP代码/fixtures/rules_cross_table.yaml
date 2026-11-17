@@ -1,0 +1,62 @@
+# 规则包 · 跨表版（展示规则也可以引用外部表字段）
+
+pack:
+  id: PACK_PLACEMENT_ACTIVITY_CROSS
+  version: "0.1"
+
+rules:
+  - id: C-01
+    name: 产出比 1:10:100
+    level: 阻断
+    source: oral
+    desc: 低 / 中 / 高三档产出比必须为 1:10:100
+    when: tiers.T_LOW.ratio * 10 == tiers.T_MID.ratio and tiers.T_MID.ratio * 10 == tiers.T_HIGH.ratio
+    message: 三档产出比不是 1:10:100
+
+  - id: C-02
+    name: 中档占比落在区间内
+    level: 高
+    source: sim
+    desc: 中档人数 / 服务器人数 落在 (0.3%, 0.6%)
+    when: tiers.T_MID.quota_pct_min <= tiers.T_MID.count / activity.server_population <= tiers.T_MID.quota_pct_max
+    message: 中档占比超出 0.3%–0.6%
+
+  - id: C-03
+    name: 低档按人数比例推导
+    level: 高
+    source: oral
+    desc: 低档份数 = 服务器人数 × 声明比例
+    when: tiers.T_LOW.count == round(activity.server_population * tiers.T_LOW.population_ratio)
+    message: 低档份数与公式不一致
+
+  - id: C-04
+    name: 兑换道具售价不超过 20
+    level: 高
+    source: sim
+    desc: 活动兑换用的道具单价不能超过 20（防通胀，阈值为占位值）
+    when: items.10086.sell_price <= 20
+    message: 兑换道具单价超过阈值
+
+  - id: C-05
+    name: 头奖道具售价门槛
+    level: 中
+    source: eng
+    desc: 顶档奖励的道具售价不低于 50（工程自建，用来区分稀有度）
+    when: items.10087.sell_price >= 50
+    message: 头奖道具售价低于 50
+
+  - id: C-06
+    name: 下游引用字段必须存在（含跨表）
+    level: 阻断
+    source: eng
+    desc: 所有 refs 都要能解析，跨表的 items.<id>.<字段> 也算
+    when: m.unresolved_refs == 0
+    message: 有引用解析不到——可能是道具 ID 打错，或道具被删
+
+  - id: C-07
+    name: 掉落组绑定的道具必须可兑换
+    level: 中
+    source: eng
+    desc: 掉落掉的道具售价不能高于兑换门槛（工程自建，用来演示规则也能读跨表字段）
+    when: drops.5001.item.sell_price <= 20
+    message: 掉落组绑定的道具售价过高，和兑换口径不一致

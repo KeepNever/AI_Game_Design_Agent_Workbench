@@ -1,0 +1,29 @@
+# 变异评测 · 雾隐镇 GT 上人为注入的 5 处破坏（全部确定性，无随机）
+# 预期：4 个应被强检出，1 个（换错变量、目标结局本就不可达）按现有边界判漏报——
+# 漏报本身就是要量化的东西，不许为了好看把判定放宽。
+
+- name: 兑换门槛抬高到永远够不着
+  kind: cond_replace
+  edge: {from: v11, to: v13}
+  find: "clue >= 2"
+  replace: "clue >= 9"
+
+- name: 删除入口边（全村与外界断开）
+  kind: drop_edge
+  edge: {from: v0, to: v1}
+
+- name: 线索上限砍到 1（第二个线索永远拿不到）
+  kind: var_max
+  var: clue
+  value: 1
+
+- name: 删除唯一的写点（听完守林人不再记录）
+  kind: drop_action
+  edge: {from: v8, to: v11}
+  var: met_elder
+
+- name: 条件换错变量（把"见过守林人"写成"猎人信任==true"）
+  kind: cond_replace
+  edge: {from: v6, to: v8}
+  find: "met_elder == true"
+  replace: "trust == true"

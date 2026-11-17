@@ -1,0 +1,32 @@
+# 雾隐镇支线 · Q013 三态判定示例（UNSAT 版）
+# 设计意图：玩家拿不到 2 条线索（clue_count 上限只有 1），hidden_end 永远到不了。
+# 这份配置的价值在 UNSAT 的诊断输出：它会指出挡住结局的是哪条边、各变量最大到过多少。
+
+_meta:
+  pack_id: PACK_QUEST_WUYIN
+  name: 雾隐镇支线（任务可达性示例）
+  version: "0.1"
+
+activity:
+  id: ACT-QUEST-01
+  name: 雾隐镇支线
+  server_population: 1000
+
+tiers:
+  - id: T_NORMAL
+    name: 普通
+    ratio: 1
+    count: 100
+
+quest:
+  start: start
+  targets: [hidden_end]
+  variables:
+    clue_count: {type: int, min: 0, max: 1, init: 0}
+    secret_revealed: {type: bool, init: false}
+    player_trust: {type: int, min: 0, max: 5, init: 1}
+  nodes: [start, n1, n2, hidden_end]
+  edges:
+    - {from: start, to: n1, actions: [{var: clue_count, op: "+=", value: 1}]}
+    - {from: n1, to: n2, actions: [{var: clue_count, op: "+=", value: 1}]}
+    - {from: n2, to: hidden_end, cond: "clue_count >= 2 and not secret_revealed"}

@@ -1,0 +1,14 @@
+{
+  "game": "gameA_推箱",
+  "scenarios": [
+    { "kind": "path-replay", "name": "A-L0 通关路径重放（GT-1 求解 → 逐步重放）", "level": 0 },
+    { "kind": "mechanism", "name": "A-L1 推箱跟随与撞墙拦断", "level": 1, "moves": "DDDRRRULLL",
+      "assertions": [
+        { "afterStep": 8, "type": "entityAt", "entity": "box", "x": 2, "y": 4 },
+        { "afterStep": 9, "type": "entityAt", "entity": "box", "x": 1, "y": 4 },
+        { "afterStep": 10, "type": "moved", "value": false },
+        { "afterStep": 10, "type": "playerAt", "x": 2, "y": 4 },
+        { "afterStep": 10, "type": "entityAt", "entity": "box", "x": 1, "y": 4 },
+        { "type": "win", "value": false } ] }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "game": "gameC_碎裂地板",
+  "scenarios": [
+    { "kind": "path-replay", "name": "C-L0 通关路径重放（显式路径）", "level": 0, "moves": "RRRR" },
+    { "kind": "mechanism", "name": "C-L0 碎裂触发→离开即塌→洞拦断（观测驱动修正）", "level": 0, "moves": "RRLRL",
+      "assertions": [
+        { "afterStep": 1, "type": "cellProp", "x": 2, "y": 1, "prop": "crack", "value": 2 },
+        { "afterStep": 2, "type": "cellProp", "x": 2, "y": 1, "prop": "hole", "value": 1 },
+        { "afterStep": 2, "type": "cellProp", "x": 3, "y": 1, "prop": "crack", "value": 2 },
+        { "afterStep": 3, "type": "moved", "value": false },
+        { "afterStep": 3, "type": "playerAt", "x": 3, "y": 1 },
+        { "afterStep": 5, "type": "moved", "value": false },
+        { "afterStep": 5, "type": "playerAt", "x": 4, "y": 1 } ] }
+  ]
+}

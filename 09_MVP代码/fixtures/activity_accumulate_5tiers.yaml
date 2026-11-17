@@ -1,0 +1,76 @@
+# 第二套配置：赛季累充（5 档、字段名完全不同）
+# 存在的唯一目的：证明代码没有写死「三档 / ratio / count / T_HIGH」。
+# 这套里档位用 amount（充值金额）与 reward_points（返积分），没有 ratio，也没有 count（除顶档限 1 次）。
+
+_meta:
+  pack_id: PACK_SEASON_ACCUMULATE
+  name: 赛季累充 / 5 档返利
+  version: "0.1"
+  note: 结构与放置活动完全不同，用来验证 Schema 能否承载第二种品类
+
+activity:
+  id: ACT-SEASON-07
+  name: 赛季累充第七期
+  type: 累充返利
+  version: "3.2"
+  server_open_days: 120
+  open_day_min: 14
+  budget_cap: 800000
+
+tiers:
+  - id: T1
+    name: 6 元档
+    amount: 6
+    reward_points: 60
+  - id: T2
+    name: 30 元档
+    amount: 30
+    reward_points: 360
+  - id: T3
+    name: 98 元档
+    amount: 98
+    reward_points: 1300
+  - id: T4
+    name: 328 元档
+    amount: 328
+    reward_points: 4600
+  - id: T5
+    name: 648 元档
+    amount: 648
+    reward_points: 9798
+    count: 1
+
+downstream:
+  - id: OBJ_IAP_PAGE
+    name: 充值页档位展示
+    type: UI
+    owner: 商业化产品
+    refs:
+      - tiers.T1.reward_points
+      - tiers.T5.reward_points
+  - id: OBJ_SEASON_MAIL
+    name: 赛季奖励邮件
+    type: 文案 / 发放
+    owner: 运营
+    refs:
+      - tiers.T3.reward_points
+  - id: OBJ_CS_SCRIPT
+    name: 客服话术
+    type: 文档
+    owner: 客服
+    refs:
+      - tiers.T4.amount
+      - tiers.T5.reward_points
+  - id: OBJ_ACC_RANK
+    name: 累充榜
+    type: UI / 榜单
+    owner: 系统策划
+    refs:
+      - tiers.T4.reward_points
+
+derived:
+  - path: tiers.T5.reward_points
+    formula: round(tiers.T4.reward_points * 2.13)
+    refs:
+      - tiers.T4.reward_points
+    reason: 顶档积分按上一档的折算系数推导，改 T4 就要重算 T5

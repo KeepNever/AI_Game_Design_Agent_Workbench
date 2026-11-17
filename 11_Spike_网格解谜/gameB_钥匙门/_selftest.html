@@ -1,0 +1,20 @@
+<!doctype html><meta charset="utf-8"><pre id="out">PENDING</pre>
+<script src="../engine/grid_engine.js"></script>
+<script src="../engine/dsl_runtime.js"></script>
+<script src="levels.js"></script>
+<script src="mechanic.js"></script>
+<script>
+const out = [];
+function say(m){ out.push(m); document.getElementById('out').textContent = out.join('\n'); }
+try {
+  const rules = DSLRules(MECHANIC, LEVELS);
+  let s = rules.init(LEVELS[0], 0);
+  say('初始 keys=' + s.vars.keys + ' 实体=' + JSON.stringify(s.entities));
+  for (const d of 'RRRDDRRUU') {
+    const r = rules.tryMove(s, d, LEVELS[0]);
+    s = r.state;
+    say(d + ' moved=' + r.moved + ' 玩家=' + s.player.x + ',' + s.player.y + ' keys=' + s.vars.keys + ' 事件=' + r.events.map(e=>e.msg).join('/'));
+  }
+  say('最终 isWin=' + rules.isWin(s, LEVELS[0]));
+} catch (e) { say('★异常: ' + e.message); }
+</script>

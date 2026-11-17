@@ -1,0 +1,17 @@
+# ===== 工作记忆与私有数据（曦：不入仓库）=====
+.workbuddy/
+
+# ===== 运行时环境（本地构建产物）=====
+node_modules/
+pipeline/tokenizer/venv*/
+.playwright-cli/
+*.log
+
+# ===== 系统杂项 =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== Python 运行时残留 =====
+__pycache__/
+*.pyc

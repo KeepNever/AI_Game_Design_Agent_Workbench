@@ -1,0 +1,73 @@
+# 规则包 v0.1 · 放置类活动
+# 每条规则 = 一句条件表达式 + 来源分层 + 级别。
+# ★ 来源三层必须保留：口述（受访者说过）/ 工程（原型自建，无受访者依据）/ 模拟阈值（口述有方向，数值是占位）。
+#   报告里分开展示，不许合成「8/8 通过」。
+
+pack:
+  id: PACK_PLACEMENT_ACTIVITY
+  version: "0.1"
+
+rules:
+  - id: R-01
+    name: 产出比 1:10:100
+    level: 阻断
+    source: oral
+    desc: 低 / 中 / 高三档产出比必须为 1:10:100（受访者原话「1:10:100」）
+    when: tiers.T_LOW.ratio * 10 == tiers.T_MID.ratio and tiers.T_MID.ratio * 10 == tiers.T_HIGH.ratio
+    message: 三档产出比不是 1:10:100
+
+  - id: R-02
+    name: 头奖唯一
+    level: 阻断
+    source: oral
+    desc: 高档产出数量必须为 1（原话「最厉害的那个只能出现一个」）
+    when: tiers.T_HIGH.count == 1
+    message: 高档数量不等于 1
+
+  - id: R-03
+    name: 中档人数与声明一致
+    level: 阻断
+    source: eng
+    desc: 实际配置人数必须等于声明值（工程自建：防手改配置未同步口径，无受访者依据）
+    when: tiers.T_MID.count == tiers.T_MID.declared_count
+    message: 中档配置值与声明值不一致
+
+  - id: R-04
+    name: 低档按人数比例推导
+    level: 高
+    source: oral
+    desc: 低档份数应等于 服务器人数 × 声明比例
+    when: tiers.T_LOW.count == round(activity.server_population * tiers.T_LOW.population_ratio)
+    message: 低档份数与「人数 × 比例」算出来的不一致
+
+  - id: R-05
+    name: 中档占比落在区间内
+    level: 高
+    source: sim
+    desc: 中档人数 / 服务器人数 落在 (0.3%, 0.6%)（区间为占位值）
+    when: tiers.T_MID.quota_pct_min <= tiers.T_MID.count / activity.server_population <= tiers.T_MID.quota_pct_max
+    message: 中档占比超出 0.3%–0.6%
+
+  - id: R-06
+    name: 覆盖人数不超过服务器人数
+    level: 阻断
+    source: eng
+    desc: 各档覆盖人数之和不得大于服务器当前人数（工程自建）
+    when: m.sum_count <= activity.server_population
+    message: 三档覆盖人数之和超过服务器人数
+
+  - id: R-07
+    name: 下游引用字段必须存在
+    level: 阻断
+    source: eng
+    desc: 下游对象声明的引用路径必须能在配置里解析（工程自建）
+    when: m.unresolved_refs == 0
+    message: 有下游对象引用了不存在的字段
+
+  - id: R-08
+    name: 开服天数满足开放门槛
+    level: 高
+    source: oral
+    desc: 当前开服天数必须达到活动开放门槛
+    when: activity.server_open_days >= activity.open_day_min
+    message: 开服天数未达开放门槛

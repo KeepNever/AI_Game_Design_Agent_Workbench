@@ -1,0 +1,46 @@
+# 雾隐镇支线 · 完整任务图（移植自 08_原型与界面/任务结构检查报告_雾隐镇.html）
+# 16 节点 / 17 边 / 3 变量 / 3 结局，全量真实数据，无删改。
+# 用途：任务结构检查（gdw/structure.py）的验收夹具——原报告标出三处设计错误，
+# 移植后必须在 Python 里复现；复现不了就记差异，不硬凑。
+
+_meta:
+  pack_id: PACK_QUEST_WUYIN_FULL
+  name: 雾隐镇支线（完整任务图）
+  version: "0.1"
+
+activity:
+  id: ACT-QUEST-02
+  name: 雾隐镇支线
+  server_population: 1000
+
+tiers:
+  - id: T_NORMAL
+    name: 普通
+    ratio: 1
+    count: 100
+
+quest:
+  start: v0
+  targets: [v13, v14, v15]
+  variables:
+    clue: {type: int, min: 0, max: 4, init: 0}
+    trust: {type: int, min: 0, max: 1, init: 0}
+    met_elder: {type: bool, init: false}
+  nodes: [v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15]
+  edges:
+    - {from: v0, to: v1}
+    - {from: v1, to: v2, actions: [{var: clue, op: "+=", value: 1}]}
+    - {from: v2, to: v3, actions: [{var: clue, op: "+=", value: 1}]}
+    - {from: v3, to: v4}
+    - {from: v4, to: v5}
+    - {from: v5, to: v6, cond: "clue >= 1", actions: [{var: trust, op: "+=", value: 1}]}
+    - {from: v6, to: v7, cond: "trust >= 1"}
+    - {from: v7, to: v9}
+    - {from: v6, to: v8, cond: "met_elder == true"}
+    - {from: v8, to: v11, actions: [{var: met_elder, op: "set", value: true}]}
+    - {from: v9, to: v10, actions: [{var: clue, op: "+=", value: 1}]}
+    - {from: v10, to: v11, actions: [{var: clue, op: "+=", value: 1}]}
+    - {from: v11, to: v12, cond: "clue >= 2"}
+    - {from: v11, to: v13, cond: "clue >= 2"}
+    - {from: v11, to: v15, cond: "clue < 2"}
+    - {from: v12, to: v14, cond: "clue >= 3 and met_elder == true and trust >= 2"}

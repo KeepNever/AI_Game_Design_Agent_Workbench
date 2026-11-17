@@ -1,0 +1,48 @@
+# 规则包 · 宝可梦真数据（规则读的全是真实数值，一条都不是我编的）
+
+pack:
+  id: PACK_POKEMON_REAL
+  version: "0.1"
+
+rules:
+  - id: M-01
+    name: 招式威力不超过 250
+    level: 阻断
+    source: eng
+    desc: 全游戏威力最高的招式（爆裂拳）是 250，超过必是填错
+    when: moves.1.power <= 250
+    message: 招式威力超过 250
+
+  - id: M-02
+    name: PP 落在 1–40
+    level: 高
+    source: eng
+    desc: 常规招式 PP 上限 40（祷告类可回复，此处按基础值）
+    when: 1 <= moves.1.pp <= 40
+    message: 招式 PP 不在 1–40
+
+  - id: M-03
+    name: 横杠 id 也能查表（double-edge）
+    level: 低
+    source: sim
+    desc: moves.38 是 double-edge，第一世代招式（power 120 / pp 15）。
+      ★这条规则的第一版写的是「moves.25 是第二世代的 double-edge」——真数据当场打脸：25 是 mega-kick（第一世代），
+      double-edge 是 38 号、也是第一世代。已按核对结果改写，错误版本留在这行注释里当警示。
+    when: moves.38.generation_id == 1
+    message: double-edge 的世代标注不是 1
+
+  - id: M-04
+    name: 下游引用字段必须存在
+    level: 阻断
+    source: eng
+    desc: 含跨表多跳的引用（moves.<id>.type.identifier）也要能解析
+    when: m.unresolved_refs == 0
+    message: 有引用解析不到
+
+  - id: M-05
+    name: 开服天数满足开放门槛
+    level: 高
+    source: oral
+    desc: 与其它活动一致的开服门槛
+    when: activity.server_open_days >= activity.open_day_min
+    message: 开服天数未达门槛

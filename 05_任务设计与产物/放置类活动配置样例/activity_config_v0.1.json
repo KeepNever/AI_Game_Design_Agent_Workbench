@@ -1,0 +1,153 @@
+{
+  "_meta": {
+    "pack_id": "PACK_PLACEMENT_ACTIVITY",
+    "name": "放置类 / 活动奖励配置",
+    "version": "0.1",
+    "created": "2026-11-09",
+    "applies_to": {
+      "distribution_channel": "小游戏",
+      "genre": "放置",
+      "design_domain": "数值 / 活动"
+    },
+    "purpose": "验证「变更影响分析」这一价值假设的最小数据集，不是完整活动配置表。",
+    "status": "v0.1 冻结（2026-11-09）——收到三位受访者反馈前不改字段与规则，只记录差异。",
+    "source_legend": {
+      "oral": "来自 S2 样本 04（放置类活动策划，2026-11-08，贴吧公开回复）",
+      "sim": "模拟数据，仅用于原型演示，不得当作真实业务规则",
+      "infer": "由口述推断出的结构，未经受访者确认"
+    }
+  },
+
+  "activity": {
+    "id": "ACT-1109-01",
+    "name": "霜月祭",
+    "type": "固定循环活动",
+    "server_open_days": 45,
+    "open_day_min": 30,
+    "duration_days": 7,
+    "lead_time_days": 30,
+    "server_population": 1200,
+    "_source": {
+      "type": "oral（固定活动按开服天数推进）",
+      "open_day_min": "sim（口述只说「按开服天数推进」，未给具体阈值）",
+      "server_open_days": "sim",
+      "duration_days": "sim",
+      "lead_time_days": "oral（节庆活动提前一两个月排，按一个月左右做）",
+      "server_population": "sim（口述提到「按当前服务器人数」做比例，未给人数）"
+    }
+  },
+
+  "tiers": [
+    {
+      "id": "T_HIGH",
+      "name": "高档",
+      "ratio": 100,
+      "count": 1,
+      "count_mode": "fixed",
+      "_source": {
+        "ratio": "oral（1:10:100）",
+        "count": "oral（「最厉害的那个……只能出现一个」）",
+        "count_mode": "oral"
+      }
+    },
+    {
+      "id": "T_MID",
+      "name": "中档",
+      "ratio": 10,
+      "count": 5,
+      "declared_count": 5,
+      "count_mode": "fixed",
+      "quota_pct_min": 0.003,
+      "quota_pct_max": 0.006,
+      "_source": {
+        "ratio": "oral（1:10:100）",
+        "count": "sim（口述只说「要有固定的人数」，未给数字）",
+        "declared_count": "sim（用于检查「声明值」与「实际配置值」是否一致）",
+        "quota_pct_min/max": "sim（口述说「占比不能高也不能低」，未给上下界；此处为演示区间）"
+      }
+    },
+    {
+      "id": "T_LOW",
+      "name": "低档",
+      "ratio": 1,
+      "count": 120,
+      "count_mode": "ratio_of_population",
+      "population_ratio": 0.1,
+      "_source": {
+        "ratio": "oral（1:10:100）",
+        "count": "sim",
+        "population_ratio": "sim（口述只说「其他奖励按当前服务器人数做比例判断」，未给比例）"
+      }
+    }
+  ],
+
+  "downstream": [
+    {
+      "id": "OBJ_RANK",
+      "name": "排行榜奖励展示",
+      "type": "UI / 榜单",
+      "refs": ["tiers.T_HIGH.count", "tiers.T_MID.count"],
+      "note": "样本 04 提供了「打完活动 boss 没奖励、但榜上有名」的实际案例，说明榜单状态与奖励发放曾出现不一致；具体配置依赖关系仍待验证，此处字段引用为推断。",
+      "_source": "infer"
+    },
+    {
+      "id": "OBJ_ANNOUNCE",
+      "name": "活动公告文案",
+      "type": "文案",
+      "refs": ["tiers.T_MID.ratio", "tiers.T_LOW.ratio", "tiers.T_MID.count"],
+      "note": "公告通常直接写出「产出比 1:10:100」和「中档 X 人」。",
+      "_source": "infer"
+    },
+    {
+      "id": "OBJ_SHOP",
+      "name": "商店兑换比例",
+      "type": "数值 / 兑换",
+      "refs": ["tiers.T_MID.ratio", "tiers.T_LOW.ratio"],
+      "note": "活动道具兑换按档位产出比折算。",
+      "_source": "infer"
+    },
+    {
+      "id": "OBJ_MAIL",
+      "name": "发奖邮件模板",
+      "type": "文案 / 发放",
+      "refs": ["tiers.T_LOW.count", "tiers.T_MID.count"],
+      "note": "邮件正文含「低档 X 份 / 中档 X 人」等数量变量。",
+      "_source": "infer"
+    },
+    {
+      "id": "OBJ_DROP",
+      "name": "掉落实体配置",
+      "type": "数值 / 掉落",
+      "refs": ["tiers.T_LOW.count"],
+      "note": "低档产出按份数生成掉落条目。",
+      "_source": "infer"
+    },
+    {
+      "id": "OBJ_FAQ",
+      "name": "客服 FAQ / 口径说明",
+      "type": "文档",
+      "refs": ["tiers.T_MID.count"],
+      "note": "FAQ 里写明了中档名额，客服按此答复。",
+      "_source": "infer"
+    }
+  ],
+
+  "rules": [
+    { "id": "R-01", "name": "产出比 1:10:100", "level": "阻断", "source": "oral",
+      "desc": "低 / 中 / 高三档的产出比必须为 1:10:100。" },
+    { "id": "R-02", "name": "头奖唯一", "level": "阻断", "source": "oral",
+      "desc": "高档产出数量必须为 1。" },
+    { "id": "R-03", "name": "中档人数与声明一致", "level": "阻断", "source": "sim",
+      "desc": "中档实际配置人数必须等于声明的固定人数（防手改配置未同步口径）。" },
+    { "id": "R-04", "name": "低档按人数比例推导", "level": "高", "source": "oral",
+      "desc": "低档数量应由当前服务器人数 × 声明比例推导得出。" },
+    { "id": "R-05", "name": "中档占比落在区间内", "level": "高", "source": "oral+sim",
+      "desc": "中档人数 / 服务器人数必须落在预设区间（下限与上限为模拟值）。" },
+    { "id": "R-06", "name": "覆盖人数不超过服务器人数", "level": "阻断", "source": "infer",
+      "desc": "各档覆盖人数之和不得大于服务器当前人数。" },
+    { "id": "R-07", "name": "下游引用字段必须存在", "level": "阻断", "source": "infer",
+      "desc": "下游对象声明的引用路径必须在活动配置中可解析。" },
+    { "id": "R-08", "name": "开服天数满足开放门槛", "level": "高", "source": "oral",
+      "desc": "当前开服天数必须达到活动开放门槛，否则不应开启。" }
+  ]
+}

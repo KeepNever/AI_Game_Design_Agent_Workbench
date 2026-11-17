@@ -1,0 +1,6 @@
+# GLM-4.7 Tokenizer 环境依赖
+# 注：模型 config.json 所写 transformers_version = 4.54.0，但该版本已不在 PyPI 镜像源，
+#     且 4.x 系列依赖的 tokenizers 无 Python 3.13 Windows wheel。
+#     实测方案：与 GLM-5.3-Flash 共用 transformers==5.16.0（glm4_moe AutoTokenizer 加载经冒烟实测）。
+transformers==5.16.0
+jinja2>=3.1

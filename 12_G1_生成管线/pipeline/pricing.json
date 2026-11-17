@@ -1,0 +1,11 @@
+{
+  "source": "00_立项文档/17.8_API预算核对_v5.md §三（官方单价，核对日期 2026-11-12）",
+  "currency": "CNY",
+  "unit": "元 / 1M tokens",
+  "perMillionTokens": {
+    "glm-5.3-flash": { "input": 0.8, "output": 2.8 },
+    "glm-4.7": { "input": 3, "output": 14 },
+    "glm-5.3": { "input": 8, "output": 28 }
+  },
+  "note": "GLM-4.7 输出单价适用 ≥0.2K 输出档；缓存折扣（30% 命中假设）待真实 usage 报告缓存字段后再细化；未列出的模型价格 = 未配置，金额闸门按 NO_PRICE 记账并提示补配"
+}

@@ -1,0 +1,4 @@
+# GLM-5.3-Flash Processor/Tokenizer 环境依赖（精确锁定：模型 config.json 所写 transformers_version = 5.16.0）
+# AutoProcessor 导入可能需要 torch（仅 CPU，不加载模型权重）；导入失败时 sidecar 自动降级 AutoTokenizer 并如实标注
+transformers==5.16.0
+jinja2>=3.1

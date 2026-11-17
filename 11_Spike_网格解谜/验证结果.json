@@ -1,0 +1,50 @@
+{
+  "sokoban": [
+    {
+      "solvable": true,
+      "steps": 15,
+      "path": "DDULLDDRUDDRRUU"
+    },
+    {
+      "solvable": true,
+      "steps": 26,
+      "path": "DDDRRRULDLUUDDRRRUUURULLLL"
+    }
+  ],
+  "keydoor": [
+    {
+      "solvable": true,
+      "steps": 9,
+      "path": "RRRDDRRUU"
+    },
+    {
+      "solvable": true,
+      "steps": 13,
+      "path": "RRDDRRUUDRRRU"
+    }
+  ],
+  "crumble": [
+    {
+      "solvable": true,
+      "steps": 4,
+      "path": "RRRR"
+    },
+    {
+      "solvable": true,
+      "steps": 10,
+      "path": "RRRRRRDDDD"
+    }
+  ],
+  "switchgate": [
+    {
+      "solvable": true,
+      "steps": 6,
+      "path": "RRRRRR"
+    },
+    {
+      "solvable": true,
+      "steps": 14,
+      "path": "RRRRRRDDLLLLLL"
+    }
+  ]
+}

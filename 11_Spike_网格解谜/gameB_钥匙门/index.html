@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>Spike B · 收集钥匙开启出口</title>
+<style>
+  body {
+    background: radial-gradient(1200px 700px at 50% -10%, #1E3A5F, #0F1E33 55%, #0A1524);
+    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="../engine/grid_engine.js"></script>
+<script src="levels.js"></script>
+<script src="mechanic.js"></script>
+<script src="../engine/dsl_runtime.js"></script>
+<script>
+  GridGame({
+    title: "Spike B · 收集钥匙开启出口",
+    mount: document.getElementById("app"),
+    levels: LEVELS,
+    rules: DSLRules(MECHANIC, LEVELS),
+    tile: 48
+  });
+</script>
+</body>
+</html>

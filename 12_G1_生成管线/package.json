@@ -1,0 +1,11 @@
+{
+  "name": "g1-generation-pipeline",
+  "version": "0.1.0",
+  "private": true,
+  "description": "G1 产品级 AI 游戏生成管线（M0 沙箱安全边界先行）",
+  "scripts": {
+    "security-tests": "node security/security-tests.js",
+    "m1-tests": "node pipeline/m1-tests.js",
+    "m2-tests": "node validator/m2-tests.js"
+  }
+}

@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>设计影响分析器 · 放置类活动奖励配置</title>
+<style>
+  :root{
+    --navy:#17365D; --ink:#1F2937; --muted:#6B7280; --line:#E5E7EB;
+    --bg:#F5F7FA; --pass:#0F7B4F; --passbg:#E6F4EA;
+    --fail:#B42318; --failbg:#FBE9E7; --warn:#B54708; --warnbg:#FFF4E0;
+    --oral:#1D4ED8; --oralbg:#E8EEFB; --sim:#92400E; --simbg:#FDF3E3;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; padding:24px 26px 40px; background:var(--bg); color:var(--ink);
+    font-family:"微软雅黑","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+    font-size:13px; line-height:1.65; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1400px;margin:0 auto;}
+
+  /* header */
+  header{background:var(--navy);border-radius:10px;padding:18px 22px 16px;color:#fff;}
+  header h1{margin:0;font-size:19px;font-weight:700;letter-spacing:.3px;}
+  header .pitch{margin-top:9px;padding:9px 12px;border-left:3px solid #F0B429;
+    background:rgba(255,255,255,.07);border-radius:0 6px 6px 0;
+    font-size:12.5px;color:#F2F6FB;line-height:1.72;}
+  header .pitch b{color:#FFD166;font-weight:700;}
+  header .sub{margin-top:5px;font-size:11.5px;color:#B9C7DA;line-height:1.6;}
+  .meta{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+  .chip{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18);
+    border-radius:20px;padding:3px 11px;font-size:10.5px;color:#DCE6F2;}
+
+  /* tabs */
+  .tabs{display:flex;gap:8px;margin:16px 0 14px;flex-wrap:wrap;}
+  .tab{background:#fff;border:1px solid var(--line);border-radius:8px;padding:9px 15px;
+    cursor:pointer;font-size:12px;color:var(--muted);transition:.15s;user-select:none;}
+  .tab b{color:var(--ink);font-weight:600;margin-right:5px;}
+  .tab:hover{border-color:#C3CEDE;}
+  .tab.on{background:var(--navy);border-color:var(--navy);color:#C9D6E8;}
+  .tab.on b{color:#fff;}
+
+  /* layout */
+  .main{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:16px;align-items:start;}
+  .card{background:#fff;border:1px solid var(--line);border-radius:9px;margin-bottom:14px;overflow:hidden;}
+  .card > .hd{display:flex;align-items:center;justify-content:space-between;
+    padding:10px 14px;border-bottom:1px solid var(--line);background:#FAFBFC;}
+  .card > .hd h2{margin:0;font-size:12.5px;font-weight:700;color:var(--navy);letter-spacing:.2px;}
+  .card > .hd .tag{font-size:10px;color:var(--muted);}
+  .card > .bd{padding:12px 14px;}
+
+  /* case desc */
+  .casebar{background:#fff;border:1px solid var(--line);border-left:3px solid var(--navy);
+    border-radius:7px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#374151;}
+
+  /* kv */
+  .kv{display:grid;grid-template-columns:88px 1fr 88px 1fr;gap:5px 10px;font-size:12px;}
+  .kv .k{color:var(--muted);}
+  .kv .v{color:var(--ink);font-weight:600;}
+
+  /* table */
+  table{width:100%;border-collapse:collapse;font-size:12px;}
+  th{background:#F3F6FA;color:var(--navy);font-weight:600;text-align:left;
+    padding:7px 9px;border-bottom:1px solid var(--line);font-size:11.5px;white-space:nowrap;}
+  td{padding:7px 9px;border-bottom:1px solid #F0F2F5;vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  td.num{font-variant-numeric:tabular-nums;font-weight:600;}
+  code{background:#F3F5F9;border:1px solid #E7EBF1;border-radius:4px;padding:1px 5px;
+    font-family:Consolas,"新宋体",monospace;font-size:11px;color:#334155;}
+
+  .badge{display:inline-block;font-size:10px;padding:1px 7px;border-radius:10px;
+    font-weight:600;letter-spacing:.2px;}
+  .badge.oral{color:var(--oral);background:var(--oralbg);}
+  .badge.sim{color:var(--sim);background:var(--simbg);}
+  .badge.infer{color:#6D28D9;background:#F3EBFF;}
+
+  /* change */
+  .diff{display:flex;align-items:center;gap:10px;font-size:12.5px;flex-wrap:wrap;}
+  .diff .from{color:#9AA4B2;text-decoration:line-through;font-variant-numeric:tabular-nums;}
+  .diff .arrow{color:var(--muted);}
+  .diff .to{color:var(--fail);font-weight:700;font-size:14px;font-variant-numeric:tabular-nums;}
+  .diff .lbl{color:var(--muted);font-size:11.5px;}
+  .nochg{color:var(--muted);font-size:12px;}
+
+  /* summary */
+  .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:14px;}
+  .sm{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 13px;}
+  .sm .n{font-size:18px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums;}
+  .sm .n small{font-size:11.5px;color:var(--muted);font-weight:400;}
+  .sm .l{font-size:11px;color:var(--ink);margin-top:3px;font-weight:600;}
+  .sm .h{font-size:10px;color:var(--muted);margin-top:1px;}
+  .sm.pass .n{color:var(--pass);} .sm.fail .n{color:var(--fail);}
+  .sm.warn .n{color:var(--warn);} .sm.neutral .n{color:var(--navy);}
+  .sp{font-size:9px;padding:0 6px;border-radius:8px;background:#F1F3F7;color:#5B6472;}
+  .sp.oral{background:var(--oralbg);color:var(--oral);}
+  .sp.eng{background:#F3EBFF;color:#6D28D9;}
+  .sp.sim{background:var(--simbg);color:var(--sim);}
+
+  /* rule rows */
+  .rule{display:flex;gap:10px;padding:8px 0;border-bottom:1px dashed #EDF0F4;}
+  .rule:last-child{border-bottom:none;}
+  .rule .dot{flex:0 0 16px;height:16px;border-radius:50%;margin-top:2px;
+    display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;}
+  .dot.ok{background:var(--pass);} .dot.no{background:var(--fail);}
+  .rule .body{flex:1;min-width:0;}
+  .rule .top{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;}
+  .rule .rid{font-family:Consolas,monospace;font-size:10.5px;color:var(--muted);}
+  .rule .nm{font-size:12px;font-weight:600;color:var(--ink);}
+  .rule .lv{font-size:9.5px;padding:0 6px;border-radius:8px;background:#EEF1F5;color:#4B5563;}
+  .rule .lv.high{background:#FFF1E6;color:#B54708;}
+  .rule .dt{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.55;}
+  .rule.bad .dt{color:var(--fail);}
+  .rule.bad{background:#FFFBFB;margin:0 -14px;padding:8px 14px;}
+
+  /* impact */
+  .imp{border:1px solid var(--line);border-radius:7px;padding:10px 12px;margin-bottom:9px;}
+  .imp:last-child{margin-bottom:0;}
+  .imp .row1{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  .imp .nm{font-size:12.5px;font-weight:600;}
+  .imp .ty{font-size:10px;color:var(--muted);margin-left:7px;font-weight:400;}
+  .st{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;white-space:nowrap;}
+  .st.ok{color:var(--pass);background:var(--passbg);}
+  .st.risk{color:var(--fail);background:var(--failbg);}
+  .imp .refs{margin-top:6px;display:flex;gap:5px;flex-wrap:wrap;}
+  .imp .note{margin-top:6px;font-size:11px;color:var(--muted);line-height:1.55;}
+  .imp.risk{border-color:#F3C7C2;background:#FFFCFB;}
+
+  .empty{padding:18px 8px;text-align:center;color:var(--muted);font-size:12px;}
+
+  .mini{padding:4px 11px;border:1px solid #D6DCE5;border-radius:5px;background:#fff;
+    font-family:inherit;font-size:11px;color:var(--muted);cursor:pointer;}
+  .mini:hover{border-color:var(--navy);color:var(--navy);}
+  .fchip{display:inline-block;font-size:9.5px;padding:1px 6px;border-radius:9px;
+    border:1px solid #E1E6EE;background:#fff;color:#6B7280;cursor:pointer;
+    margin:0 2px 2px 0;user-select:none;white-space:nowrap;}
+  .fchip.on{background:var(--navy);border-color:var(--navy);color:#fff;}
+
+  .chgDerived{font-size:10.5px;color:#B54708;background:#FFF9F0;border:1px solid #F5E2C8;
+    border-radius:5px;padding:4px 8px;margin-top:6px;line-height:1.6;}
+  .chgTitle{font-size:11px;color:var(--muted);margin:11px 0 5px;letter-spacing:.2px;}
+  .chgList{border:1px solid #EDF0F4;border-radius:6px;padding:2px 9px;background:#FCFDFE;}
+  .chgRow{display:flex;align-items:baseline;gap:7px;padding:5px 0;
+    border-bottom:1px dashed #EDF0F4;font-size:11.5px;}
+  .chgRow:last-child{border-bottom:none;}
+  .chgLbl{color:var(--ink);font-weight:600;min-width:104px;}
+  .chgFrom{color:#9AA4B2;text-decoration:line-through;font-variant-numeric:tabular-nums;}
+  .chgTo{color:#B42318;font-weight:700;font-variant-numeric:tabular-nums;}
+  .chgCnt{margin-left:auto;font-size:10px;color:var(--muted);background:#F3F5F9;
+    border-radius:9px;padding:1px 8px;white-space:nowrap;}
+  .ctrl{grid-template-columns:1fr 1fr;}
+
+  /* free mode controls */
+  .ctrl{display:grid;grid-template-columns:1fr 1fr;gap:9px 12px;}
+  .ctrl label{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--muted);}
+  .ctrl label.chk{flex-direction:row;align-items:center;gap:6px;font-size:11.5px;
+    color:var(--ink);grid-column:1 / -1;margin-top:2px;}
+  .ctrl input[type=number]{width:100%;padding:5px 8px;border:1px solid #D6DCE5;border-radius:5px;
+    font-family:inherit;font-size:13px;font-weight:600;color:var(--navy);
+    font-variant-numeric:tabular-nums;background:#fff;}
+  .ctrl input[type=number]:focus{outline:none;border-color:var(--navy);}
+  #fReset{margin-top:10px;padding:5px 12px;border:1px solid #D6DCE5;border-radius:5px;
+    background:#fff;font-family:inherit;font-size:11px;color:var(--muted);cursor:pointer;}
+  #fReset:hover{border-color:var(--navy);color:var(--navy);}
+  .imp[data-id]:hover{border-color:var(--navy);}
+
+  .impActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;
+    padding-top:11px;border-top:1px dashed #E7EBF1;}
+  .impActions .mini{cursor:pointer;}
+
+  /* footer note */
+  .notes{background:#fff;border:1px solid var(--line);border-radius:9px;padding:14px 16px;margin-top:4px;}
+  .notes h3{margin:0 0 8px;font-size:12px;color:var(--navy);}
+  .notes ol{margin:0;padding-left:18px;font-size:11.5px;color:#4B5563;line-height:1.75;}
+  .notes b{color:var(--ink);}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:10.5px;color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Game Design Impact Analyzer　设计影响分析器</h1>
+    <div class="pitch">
+      改一个数（比如中档奖励人数 5 → 8），后面还有哪些内容要跟着改？<br>
+      这页把「谁引用了这个字段」登记下来，一次改完直接列出<b>受影响的对象</b>和<b>还没跟上的那几项</b>——把「该核对哪几项」变成一张清单，不用每次靠记忆翻需求文档。
+    </div>
+    <div class="sub">
+      首个验证原型 · 放置类活动奖励配置　|　验证目标：在<b style="color:#fff">已建模的依赖关系</b>上，能否识别一次配置变更的影响面与未同步对象<br>
+      数据来源：S2 样本 04（放置类活动策划口述）+ 明确标注的模拟数据。自动发现文案、公告图等隐式依赖不在本版范围
+    </div>
+    <div class="meta">
+      <span class="chip">数据集 PACK_PLACEMENT_ACTIVITY v0.1</span>
+      <span class="chip">8 条规则</span>
+      <span class="chip">6 个下游对象</span>
+      <span class="chip">4 个固定用例 + 1 个自由改</span>
+    </div>
+  </header>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div class="casebar" id="casebar"></div>
+
+  <div class="summary" id="summary"></div>
+
+  <div class="main">
+    <div>
+      <div class="card">
+        <div class="hd"><h2>活动配置</h2><span class="tag" id="acttag"></span></div>
+        <div class="bd"><div class="kv" id="actkv"></div></div>
+      </div>
+
+      <div class="card">
+        <div class="hd"><h2>奖励档位</h2><span class="tag">产出比 1:10:100 为口述规则</span></div>
+        <div class="bd" style="padding:0">
+          <table>
+            <thead><tr><th>档位</th><th>配比</th><th>人数 / 数量</th><th>取值方式</th><th>来源</th></tr></thead>
+            <tbody id="tiertb"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="hd"><h2>本次变更</h2><span class="tag">变更影响分析的输入</span></div>
+        <div class="bd" id="changebox"></div>
+      </div>
+
+      <div class="card">
+        <div class="hd"><h2>已建模的依赖关系</h2><span class="tag">影响分析的唯一依据</span></div>
+        <div class="bd" style="padding:0">
+          <table>
+            <thead><tr><th>下游对象</th><th>引用的配置字段</th></tr></thead>
+            <tbody id="depTb"></tbody>
+          </table>
+          <div id="depNote" style="padding:9px 14px;border-top:1px solid #F0F2F5;font-size:11px;color:var(--muted);line-height:1.6">
+            只有这张表里登记过的引用，才会进入影响分析。<b>未登记的隐式依赖（文案写死的数字、公告图、截图）本版查不出来。</b>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="hd"><h2>规则检查</h2><span class="tag" id="ruletag"></span></div>
+        <div class="bd" id="rulebox"></div>
+      </div>
+
+      <div class="card">
+        <div class="hd"><h2>影响分析</h2><span class="tag" id="impTag">按声明的引用关系推导，非语义猜测</span></div>
+        <div class="bd" id="impbox"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <h3>口径说明 · 这张报告能证明什么，不能证明什么</h3>
+    <ol>
+      <li><b>数据分层是硬约束。</b>标 <span class="badge oral">口述</span> 的字段来自样本 04 原话；标 <span class="badge sim">模拟</span> 的字段是为跑通检查而设的占位值（如内置示例中的中档 5 人、服务器 1200 人、占比区间 0.3%–0.6%）；标 <span class="badge infer">推断</span> 的是由口述推出、未经受访者确认的结构（如下游对象的具体字段引用）。<b>模拟值不能当作真实业务规则使用。</b></li>
+      <li><b>规则按来源分三层，不能合成一个「8/8」看。</b><span class="sp oral">口述</span> R-01、R-02、R-04、R-08 来自受访者原话；<span class="sp eng">工程</span> R-03、R-06、R-07 是原型为跑通检查自建的规则，没有受访者依据；<span class="sp sim">模拟阈值</span> R-05 的规则来自口述（「占比不能高也不能低」），但上下界是占位值。<b>三层都通过，只说明在这套数据上自洽，不等于业务规则全部正确。</b></li>
+      <li><b>这是显式依赖检查，不是自动发现依赖。</b>系统只能沿配置中<b>已经声明</b>的引用关系推导影响面。文案里手写死的数字、公告图上的旧数值、截图里的比对——这类隐式依赖本版查不出来，也<b>不能写成已具备的能力</b>；它仍是待验证问题。<b>公开事故公告里最常见的一类错（公告数字、描述与配置不一致）正落在这一块外面</b>——那是另一个问题，本版不做，也不假装做了。</li>
+      <li><b>这不是一张完整的活动配置表。</b>只保留了与「变更影响」有关的字段，掉落、商店、任务链等大量真实配置未纳入。</li>
+      <li><b>用例 04 是核心，但它证明的是有限的一件事。</b>它说明：在已建模的依赖关系下，「规则是否合规」与「关联内容是否同步」是两个独立问题——规则层通过，仍有 3 个下游对象未同步。它不证明系统能自己发现没被登记的依赖。</li>
+      <li><b>自由改模式里，系统只报「受影响」，不知道有没有人去改。</b>卡片上的「已同步」是人工点出来的，不是系统探测到的。真实场景中这一步应该跟版本、跟任务单、跟提交记录挂钩——本版没有接，也还没验证该怎么接。</li>
+    </ol>
+    <div class="legend">
+      <span>■ 通过 / 已同步</span><span style="color:var(--fail)">■ 违反 / 未同步</span>
+      <span>数据版本 v0.1 · 2026-11-10 冻结 · 仅用于验证价值假设，不作为交付物</span>
+    </div>
+  </div>
+
+<input type="file" id="fileInput" accept=".json,application/json" style="display:none">
+
+</div>
+
+<script>
+/* ============ 数据：与 activity_config_v0.1.json 同源 ============ */
+const BASE = {
+  activity: {
+    id: "ACT-1109-01", name: "霜月祭", type: "固定循环活动",
+    server_open_days: 45, open_day_min: 30, duration_days: 7,
+    lead_time_days: 30, server_population: 1200
+  },
+  tiers: [
+    { id: "T_HIGH", name: "高档", ratio: 100, count: 1, count_mode: "fixed",
+      src: "oral", mode_label: "固定，唯一" },
+    { id: "T_MID", name: "中档", ratio: 10, count: 5, declared_count: 5,
+      count_mode: "fixed", quota_pct_min: 0.003, quota_pct_max: 0.006,
+      src: "sim", mode_label: "固定人数" },
+    { id: "T_LOW", name: "低档", ratio: 1, count: 120,
+      count_mode: "ratio_of_population", population_ratio: 0.1,
+      src: "sim", mode_label: "按人数比例" }
+  ],
+  downstream: [
+    { id: "OBJ_RANK", name: "排行榜奖励展示", type: "UI / 榜单",
+      refs: ["tiers.T_HIGH.count", "tiers.T_MID.count"],
+      note: "样本 04 提供了「打完活动 boss 没奖励、但榜上有名」的实际案例，说明榜单状态与奖励发放曾出现不一致；具体配置依赖关系仍待验证，此处字段引用为推断。" },
+    { id: "OBJ_ANNOUNCE", name: "活动公告文案", type: "文案",
+      refs: ["tiers.T_MID.ratio", "tiers.T_LOW.ratio", "tiers.T_MID.count"],
+      note: "公告直接写出「产出比 1:10:100」与「中档 X 人」。" },
+    { id: "OBJ_SHOP", name: "商店兑换比例", type: "数值 / 兑换",
+      refs: ["tiers.T_MID.ratio", "tiers.T_LOW.ratio"],
+      note: "活动道具兑换按档位产出比折算。" },
+    { id: "OBJ_MAIL", name: "发奖邮件模板", type: "文案 / 发放",
+      refs: ["tiers.T_LOW.count", "tiers.T_MID.count"],
+      note: "邮件正文含「低档 X 份 / 中档 X 人」数量变量。" },
+    { id: "OBJ_DROP", name: "掉落实体配置", type: "数值 / 掉落",
+      refs: ["tiers.T_LOW.count"],
+      note: "低档产出按份数生成掉落条目。" },
+    { id: "OBJ_FAQ", name: "客服 FAQ / 口径说明", type: "文档",
+      refs: ["tiers.T_MID.count"],
+      note: "FAQ 写明中档名额，客服按此答复。" }
+  ]
+};
+
+/* ============ 工具 ============ */
+const clone = o => JSON.parse(JSON.stringify(o));
+const tier = (c, id) => c.tiers.find(t => t.id === id);
+function walk(obj, keys) {
+  let cur = obj;
+  for (const k of keys) {
+    if (cur == null) return undefined;
+    cur = Array.isArray(cur) ? cur.find(x => x.id === k) : cur[k];
+  }
+  return cur;
+}
+function setPath(obj, path, val) {
+  const ks = path.split("."); const last = ks.pop();
+  const holder = walk(obj, ks);
+  if (holder == null) throw new Error("path not found: " + path);
+  holder[last] = val;
+}
+function getPath(obj, path) { return walk(obj, path.split(".")); }
+
+/* ============ 规则集 ============ */
+const RULES = [
+  { id: "R-01", grp: "oral", name: "产出比 1:10:100", level: "阻断", run(c) {
+      const low = tier(c, "T_LOW").ratio, mid = tier(c, "T_MID").ratio, high = tier(c, "T_HIGH").ratio;
+      if (!low) return { ok: false, detail: "低档配比为 0，无法计算比值。" };
+      const m = mid / low, h = high / low;
+      if (m === 10 && h === 100) return { ok: true, detail: `低:中:高 = 1 : ${m} : ${h}` };
+      return { ok: false, detail: `低:中:高 = 1 : ${m} : ${h}，期望 1 : 10 : 100。` };
+    } },
+  { id: "R-02", grp: "oral", name: "头奖唯一", level: "阻断", run(c) {
+      const n = tier(c, "T_HIGH").count;
+      return n === 1 ? { ok: true, detail: "高档产出 1 份。" }
+                     : { ok: false, detail: `高档产出 ${n} 份，头奖必须唯一。` };
+    } },
+  { id: "R-03", grp: "eng", name: "中档人数与声明一致", level: "阻断", run(c) {
+      const t = tier(c, "T_MID");
+      if (t.declared_count === undefined) return { ok: true, detail: "未声明固定人数，跳过。" };
+      return t.count === t.declared_count
+        ? { ok: true, detail: `配置 ${t.count} 人 = 声明 ${t.declared_count} 人。` }
+        : { ok: false, detail: `配置 ${t.count} 人 ≠ 声明 ${t.declared_count} 人，口径不一致。` };
+    } },
+  { id: "R-04", grp: "oral", name: "低档按人数比例推导", level: "高", run(c) {
+      const t = tier(c, "T_LOW"), pop = c.activity.server_population;
+      if (t.count_mode !== "ratio_of_population") return { ok: true, detail: "低档已改为固定数量，此规则不适用。" };
+      const exp = Math.round(pop * t.population_ratio);
+      return t.count === exp
+        ? { ok: true, detail: `${pop} 人 × ${(t.population_ratio * 100).toFixed(0)}% = ${exp}，与配置一致。` }
+        : { ok: false, detail: `应为 ${exp} 份（${pop} × ${(t.population_ratio * 100).toFixed(0)}%），实际配置 ${t.count} 份。` };
+    } },
+  { id: "R-05", grp: "sim", name: "中档占比落在区间内", level: "高", run(c) {
+      const t = tier(c, "T_MID"), pop = c.activity.server_population;
+      const pct = t.count / pop;
+      const lo = t.quota_pct_min * 100, hi = t.quota_pct_max * 100;
+      const okk = pct >= t.quota_pct_min && pct <= t.quota_pct_max;
+      return okk
+        ? { ok: true, detail: `${(pct * 100).toFixed(2)}%，在 ${lo.toFixed(1)}%–${hi.toFixed(1)}% 之间。` }
+        : { ok: false, detail: `${(pct * 100).toFixed(2)}%，超出 ${lo.toFixed(1)}%–${hi.toFixed(1)}% 的区间。` };
+    } },
+  { id: "R-06", grp: "eng", name: "覆盖人数不超过服务器人数", level: "阻断", run(c) {
+      const sum = c.tiers.reduce((a, t) => a + t.count, 0), pop = c.activity.server_population;
+      return sum <= pop
+        ? { ok: true, detail: `合计 ${sum} 人 ≤ 服务器 ${pop} 人。` }
+        : { ok: false, detail: `合计 ${sum} 人 > 服务器 ${pop} 人。` };
+    } },
+  { id: "R-07", grp: "eng", name: "下游引用字段必须存在", level: "阻断", run(c) {
+      const bad = [];
+      for (const o of c.downstream)
+        for (const r of o.refs) if (getPath(c, r) === undefined) bad.push(`${o.name} → ${r}`);
+      return bad.length === 0
+        ? { ok: true, detail: `${c.downstream.reduce((a, o) => a + o.refs.length, 0)} 条引用全部可解析。` }
+        : { ok: false, detail: `无法解析：${bad.join("；")}` };
+    } },
+  { id: "R-08", grp: "oral", name: "开服天数满足开放门槛", level: "高", run(c) {
+      const d = c.activity.server_open_days, m = c.activity.open_day_min;
+      return d >= m ? { ok: true, detail: `开服 ${d} 天 ≥ 门槛 ${m} 天。` }
+                    : { ok: false, detail: `开服 ${d} 天 < 门槛 ${m} 天，活动不应开启。` };
+    } }
+];
+
+/* ============ 影响分析 ============ */
+function analyzeImpact(cfg, change) {
+  if (!change) return { fields: [], objects: [] };
+  const fields = change.fields || [change.path];
+  const hit = cfg.downstream.filter(o =>
+    o.refs.some(r => fields.some(f => r === f || r.startsWith(f + ".") || f.startsWith(r + ".")))
+  );
+  return {
+    fields,
+    objects: hit.map(o => ({ ...o, synced: (change.synced || []).includes(o.id) }))
+  };
+}
+
+/* ============ 用例 ============ */
+const CASES = [
+  { id: "01", name: "正常配置",
+    desc: "未做任何修改。这一格验证的是「不误报」——如果正常配置也报警，工具就没人会用。",
+    change: null,
+    build: () => clone(BASE) },
+
+  { id: "02", name: "比例错误",
+    desc: "把中档配比由 10 改成 8，产出比不再是 1:10:100。公告已按新比例同步更新，商店兑换还没改——错误被同步扩散了一次。",
+    change: { path: "tiers.T_MID.ratio", label: "中档配比", from: 10, to: 8, synced: ["OBJ_ANNOUNCE"] },
+    build() { const c = clone(BASE); setPath(c, "tiers.T_MID.ratio", 8); return c; } },
+
+  { id: "03", name: "人数错误",
+    desc: "把中档人数由 5 改成 8，声明值仍是 5。同时越过占比上界 0.6%。这是最常见的手改配置未同步口径。",
+    change: { path: "tiers.T_MID.count", label: "中档人数", from: 5, to: 8, synced: [] },
+    build() { const c = clone(BASE); setPath(c, "tiers.T_MID.count", 8); return c; } },
+
+  { id: "04", name: "关联变更",
+    desc: "把中档人数由 5 改成 6，声明值同步改成 6。三层规则全部通过，但仍有 3 个下游对象没改。规则是否合规、关联内容是否同步，是两个问题。",
+    change: {
+      path: "tiers.T_MID.count", label: "中档人数", from: 5, to: 6,
+      fields: ["tiers.T_MID.count", "tiers.T_MID.declared_count"],
+      synced: ["OBJ_ANNOUNCE"]
+    },
+    build() {
+      const c = clone(BASE);
+      setPath(c, "tiers.T_MID.count", 6);
+      setPath(c, "tiers.T_MID.declared_count", 6);
+      return c;
+    } },
+
+  { id: "05", name: "自己改一个数", free: true,
+    desc: "改下面的数字，规则和影响面立刻重算。系统只知道哪些对象受影响，改没改要你自己判断。",
+    build: null }
+];
+
+/* ============ 变更确认单 ============ */
+function confirmSheet(cs, cfg, change, rules, fail, impact, plain) {
+  const L = [];
+  if (plain) return confirmSheetPlain(cfg, change, rules, fail, impact);
+  const okN = rules.length - fail.length;
+  L.push("# 活动配置变更确认单", "");
+  L.push(`- 活动：${cfg.activity.name}（${cfg.activity.id}）`);
+  L.push(`- 生成时间：${new Date().toLocaleString("zh-CN", { hour12: false })}`);
+  const items = change.items || [];
+  if (items.length > 1) {
+    L.push(`- 本次改动（${items.length} 项）：`);
+    for (const it of items) L.push(`  - ${it.label} ${it.from} → ${it.to}`);
+  } else {
+    const chDesc = change.from !== undefined && change.to !== undefined
+      ? `${change.label} ${change.from} → ${change.to}` : (change.label || "无");
+    L.push(`- 本次改动：${chDesc}`);
+  }
+  L.push(`- 规则检查：${okN}/${rules.length} 通过${fail.length ? `，${fail.length} 条违反` : ""}`);
+  if ((change.derived || []).length)
+    L.push(`- 连带失效：${change.derived.map(d => `${d.label} 应重算为 ${d.to}（当前 ${d.from}）`).join("；")}`);
+  L.push("");
+
+  if (fail.length) {
+    L.push(`## 规则问题（${fail.length}）`);
+    for (const f of fail) L.push(`- [ ] ${f.id} ${f.name} —— ${f.res.detail}`);
+    L.push("");
+  }
+
+  const pending = impact.objects.filter(o => !o.synced);
+  const done = impact.objects.filter(o => o.synced);
+  L.push(`## 待确认项（${pending.length}）`);
+  if (!pending.length) L.push("- （无）");
+  for (const o of pending) {
+    L.push(`- [ ] ${o.name}（${o.type}）`);
+    L.push(`      引用：${o.refs.join("、") || "未声明"}`);
+    L.push(`      负责人：____________`);
+  }
+  L.push("");
+
+  if (done.length) {
+    L.push(`## 已确认（${done.length}）`);
+    for (const o of done) L.push(`- [x] ${o.name}`);
+    L.push("");
+  }
+
+  L.push("---");
+  L.push("本清单只覆盖已声明的引用关系。文案里写死的数字、公告图、截图等隐式依赖未纳入。");
+  return L.join("\n");
+}
+
+/* 微信/飞书直接粘贴版：不带 Markdown 符号，用勾选框和缩进 */
+function confirmSheetPlain(cfg, change, rules, fail, impact) {
+  const L = [];
+  const okN = rules.length - fail.length;
+  const chDesc = change.from !== undefined && change.to !== undefined
+    ? `${change.label} ${change.from} → ${change.to}` : (change.label || "无");
+  const items = change.items || [];
+  L.push("活动配置变更确认单", "");
+  L.push(`活动：${cfg.activity.name}（${cfg.activity.id}）`);
+  if (items.length > 1) {
+    L.push(`本次改动（${items.length} 项）：`);
+    for (const it of items) L.push(`· ${it.label} ${it.from} → ${it.to}`);
+  } else {
+    L.push(`本次改动：${chDesc}`);
+  }
+  L.push(`规则检查：${okN}/${rules.length} 通过${fail.length ? `，${fail.length} 条违反` : ""}`);
+  if ((change.derived || []).length)
+    L.push(`连带失效：${change.derived.map(d => `${d.label} 应重算为 ${d.to}（当前 ${d.from}）`).join("；")}`);
+  L.push("");
+
+  if (fail.length) {
+    L.push(`【规则问题 ${fail.length} 条】`);
+    for (const f of fail) L.push(`□ ${f.id} ${f.name}：${f.res.detail}`);
+    L.push("");
+  }
+
+  const pending = impact.objects.filter(o => !o.synced);
+  const done = impact.objects.filter(o => o.synced);
+  L.push(`【待确认 ${pending.length} 项】`);
+  if (!pending.length) L.push("（无）");
+  for (const o of pending) {
+    L.push(`□ ${o.name}（${o.type}）`);
+    L.push(`   引用：${o.refs.join("、") || "未声明"}`);
+    L.push("   负责人：__________");
+  }
+  L.push("");
+
+  if (done.length) {
+    L.push(`【已确认 ${done.length} 项】`);
+    for (const o of done) L.push(`☑ ${o.name}`);
+    L.push("");
+  }
+
+  L.push("——");
+  L.push("说明：本清单只覆盖已声明的引用关系。文案里写死的数字、公告图、截图等隐式依赖未纳入。");
+  return L.join("\n");
+}
+
+function fallbackCopy(text, cb) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); } catch (e) {}
+  ta.remove();
+  cb && cb();
+}
+
+function downloadText(name, text) {
+  const blob = new Blob([text], { type: "text/markdown;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+}
+
+/* ============ 依赖编辑 ============ */
+const FIELDS = [
+  { p: "tiers.T_HIGH.count", l: "高档数量" },
+  { p: "tiers.T_HIGH.ratio", l: "高档配比" },
+  { p: "tiers.T_MID.count", l: "中档人数" },
+  { p: "tiers.T_MID.ratio", l: "中档配比" },
+  { p: "tiers.T_LOW.count", l: "低档份数" },
+  { p: "tiers.T_LOW.ratio", l: "低档配比" },
+  { p: "activity.server_population", l: "服务器人数" },
+  { p: "activity.duration_days", l: "活动天数" },
+  { p: "activity.open_day_min", l: "开放门槛" }
+];
+let DEP = null;          /* null = 使用原始 6 个对象 */
+let EDIT_DEPS = false;   /* 是否处于编辑态 */
+let OBJ_SEQ = 0;
+
+/* 基线：默认是内置示例，导入配置后换成导入的那份 */
+let ORIGIN = null;
+let BASELINE_NAME = "内置示例";
+function origin() { return ORIGIN || BASE; }
+
+function depList() { return DEP || clone(origin().downstream); }
+
+function exportJson() {
+  const cfg = buildFree();
+  const out = {
+    schema: "PACK_PLACEMENT_ACTIVITY",
+    version: "0.1",
+    exported: new Date().toISOString().slice(0, 10),
+    activity: cfg.activity,
+    tiers: cfg.tiers.map(t => ({
+      id: t.id, name: t.name, ratio: t.ratio, count: t.count,
+      count_mode: t.count_mode, declared_count: t.declared_count,
+      population_ratio: t.population_ratio
+    })),
+    downstream: cfg.downstream.map(o => ({ id: o.id, name: o.name, type: o.type, refs: o.refs })),
+    last_change: freeChange(cfg).label || null
+  };
+  const blob = new Blob([JSON.stringify(out, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "my_activity_config.json";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+}
+
+/* ============ 自由改模式 ============ */
+const FREE = { mid: 6, ratio: 10, pop: 1200, highCount: 1, highRatio: 100, openMin: 30, syncDeclared: true, synced: new Set() };
+
+function syncFreeFromOrigin() {
+  const o = origin();
+  const mid = tier(o, "T_MID"), high = tier(o, "T_HIGH");
+  FREE.mid = mid.count;
+  FREE.ratio = mid.ratio;
+  FREE.highCount = high.count;
+  FREE.highRatio = high.ratio;
+  FREE.pop = o.activity.server_population;
+  FREE.openMin = o.activity.open_day_min;
+  FREE.syncDeclared = mid.declared_count === undefined || mid.declared_count === mid.count;
+  FREE.synced.clear();
+}
+
+function validateConfig(d) {
+  if (!d || typeof d !== "object") return "不是 JSON 对象";
+  const a = d.activity, t = d.tiers;
+  if (!a || typeof a !== "object") return "缺少 activity";
+  if (typeof a.server_population !== "number") return "activity.server_population 必须是数字";
+  if (!Array.isArray(t)) return "缺少 tiers 数组";
+  for (const id of ["T_HIGH", "T_MID", "T_LOW"]) {
+    const x = t.find(v => v && v.id === id);
+    if (!x) return `tiers 里缺少 ${id}`;
+    if (typeof x.ratio !== "number" || typeof x.count !== "number") return `${id} 的 ratio / count 必须是数字`;
+  }
+  if (d.downstream !== undefined && !Array.isArray(d.downstream)) return "downstream 必须是数组";
+  return null;
+}
+
+/* 返回 null 表示成功，否则返回错误说明 */
+function loadConfig(text, name) {
+  let d;
+  try { d = JSON.parse(text); } catch (e) { return "不是合法的 JSON"; }
+  const err = validateConfig(d);
+  if (err) return err;
+
+  const base = clone(BASE);
+  const merged = {
+    activity: Object.assign(clone(base.activity), d.activity),
+    tiers: ["T_HIGH", "T_MID", "T_LOW"].map(id => Object.assign(
+      clone(base.tiers.find(v => v.id === id)), d.tiers.find(v => v.id === id))),
+    downstream: (Array.isArray(d.downstream) && d.downstream.length)
+      ? d.downstream.map(o => ({
+          id: o.id || ("OBJ_" + Math.random().toString(36).slice(2, 7)),
+          name: o.name || o.id || "未命名对象",
+          type: o.type || "自定义",
+          refs: Array.isArray(o.refs) ? o.refs.slice() : [],
+          note: o.note || "来自导入配置，未经核对。"
+        }))
+      : clone(base.downstream)
+  };
+
+  ORIGIN = merged;
+  DEP = clone(merged.downstream);
+  BASELINE_NAME = name || "导入配置";
+  syncFreeFromOrigin();
+  CURRENT = 4;
+  EDIT_DEPS = false;
+  return null;
+}
+
+function buildFree() {
+  const c = clone(origin());
+  c.downstream = depList();
+  setPath(c, "tiers.T_MID.count", FREE.mid);
+  setPath(c, "tiers.T_MID.ratio", FREE.ratio);
+  setPath(c, "activity.server_population", FREE.pop);
+  setPath(c, "tiers.T_HIGH.count", FREE.highCount);
+  setPath(c, "tiers.T_HIGH.ratio", FREE.highRatio);
+  setPath(c, "activity.open_day_min", FREE.openMin);
+  const o = origin();
+  setPath(c, "tiers.T_MID.declared_count",
+    FREE.syncDeclared ? FREE.mid : (tier(o, "T_MID").declared_count ?? tier(o, "T_MID").count));
+  return c;
+}
+
+function freeChange(cfg) {
+  const items = [], derived = [];
+  const add = (path, label, from, to) => items.push({ path, label, from, to });
+  const pairs = [
+    ["T_MID", "count", "中档人数"], ["T_MID", "ratio", "中档配比"],
+    ["T_HIGH", "count", "高档数量"], ["T_HIGH", "ratio", "高档配比"]
+  ];
+  const O = origin();
+  for (const [tid, key, label] of pairs) {
+    const a = tier(O, tid)[key], v = tier(cfg, tid)[key];
+    if (a !== v) add(`tiers.${tid}.${key}`, label, a, v);
+  }
+  if (cfg.activity.server_population !== O.activity.server_population) {
+    add("activity.server_population", "服务器人数", O.activity.server_population, cfg.activity.server_population);
+    /* 人数变了，按比例算出的低档份数就失效了，即使配置里那个数字没动 */
+    const t = tier(cfg, "T_LOW");
+    derived.push({
+      path: "tiers.T_LOW.count", label: "低档份数",
+      from: t.count, to: Math.round(cfg.activity.server_population * t.population_ratio)
+    });
+  }
+  if (cfg.activity.open_day_min !== O.activity.open_day_min) {
+    add("activity.open_day_min", "开放门槛", O.activity.open_day_min, cfg.activity.open_day_min);
+  }
+  const d = tier(cfg, "T_MID").declared_count, v = tier(cfg, "T_MID").count;
+  if (d !== v) add("tiers.T_MID.declared_count", "中档声明人数", d, v);
+
+  const fields = items.map(i => i.path).concat(derived.map(i => i.path));
+  return {
+    fields, items, derived,
+    path: fields[0] || null,
+    label: items.length ? items.map(i => `${i.label} ${i.from} → ${i.to}`).join("；") : "",
+    synced: [...FREE.synced]
+  };
+}
+
+/* ============ 渲染 ============ */
+let CURRENT = 0;
+const el = id => document.getElementById(id);
+
+/* 支持 #c4 直接打开某个用例，便于演示与截图 */
+(function () {
+  const m = location.hash.match(/^#c([1-4])$/);
+  if (m) CURRENT = Math.min(Math.max(+m[1] - 1, 0), CASES.length - 1);
+})();
+
+function badge(src) {
+  const map = { oral: ["口述", "oral"], sim: ["模拟", "sim"], infer: ["推断", "infer"] };
+  const [t, k] = map[src] || ["—", "sim"];
+  return `<span class="badge ${k}">${t}</span>`;
+}
+
+function renderTabs() {
+  el("tabs").innerHTML = CASES.map((c, i) =>
+    `<div class="tab ${i === CURRENT ? "on" : ""}" data-i="${i}"><b>用例 ${c.id}</b>${c.name}</div>`
+  ).join("");
+  document.querySelectorAll(".tab").forEach(t =>
+    t.onclick = () => { CURRENT = +t.dataset.i; render(); });
+}
+
+function render() {
+  CURRENT = Math.min(Math.max(CURRENT, 0), CASES.length - 1);
+  const cs = CASES[CURRENT];
+  const cfg = cs.free ? buildFree() : cs.build();
+  const change = cs.free ? freeChange(cfg) : cs.change;
+  const rules = RULES.map(r => ({ ...r, res: r.run(cfg) }));
+  const fail = rules.filter(r => !r.res.ok);
+  const impact = analyzeImpact(cfg, change);
+  const risk = impact.objects.filter(o => !o.synced);
+
+  el("casebar").innerHTML = `<b>用例 ${cs.id} · ${cs.name}</b>　${cs.desc}`;
+
+  const R = rules.length, P = R - fail.length;
+
+  /* 按规则来源分组统计：口述 / 工程假设 / 模拟阈值，不能合成一个「8/8」 */
+  const GRP_DEF = [
+    { k: "oral", label: "口述规则", hint: "受访者原话，可引用" },
+    { k: "eng",  label: "工程假设", hint: "原型自建，无受访者依据" },
+    { k: "sim",  label: "模拟阈值", hint: "规则来自口述，数值为占位" }
+  ];
+  const grpCards = GRP_DEF.map(g => {
+    const set = rules.filter(r => r.grp === g.k);
+    const bad = set.filter(r => !r.res.ok).length;
+    return `<div class="sm ${bad ? "fail" : "pass"}">
+      <div class="n">${set.length - bad}<small> / ${set.length}</small></div>
+      <div class="l">${g.label}</div>
+      <div class="h">${g.hint}${bad ? ` · ${bad} 条违反` : ""}</div>
+    </div>`;
+  }).join("");
+
+  el("summary").innerHTML = grpCards + `
+    <div class="sm ${risk.length ? "warn" : "pass"}">
+      <div class="n">${risk.length}<small> / ${impact.objects.length}</small></div>
+      <div class="l">${cs.free ? "受影响对象待确认" : "下游对象未同步"}</div>
+      <div class="h">${cs.free ? "点卡片可标记为已同步" : "按已声明的引用关系推导"}</div>
+    </div>`;
+
+  /* 活动信息 */
+  const a = cfg.activity;
+  el("acttag").textContent = `${a.id} · ${a.type}` + (ORIGIN ? `　基线：${BASELINE_NAME}` : "");
+  el("actkv").innerHTML = `
+    <div class="k">活动名称</div><div class="v">${a.name}</div>
+    <div class="k">持续天数</div><div class="v">${a.duration_days} 天</div>
+    <div class="k">服务器人数</div><div class="v">${a.server_population} 人 ${badge("sim")}</div>
+    <div class="k">开服天数</div><div class="v">${a.server_open_days} 天 ${badge("sim")}</div>
+    <div class="k">开放门槛</div><div class="v">≥ ${a.open_day_min} 天 ${badge("sim")}</div>
+    <div class="k">提前排期</div><div class="v">${a.lead_time_days} 天 ${badge("oral")}</div>`;
+
+  /* 档位表 */
+  el("tiertb").innerHTML = cfg.tiers.map(t => `
+    <tr>
+      <td><b>${t.name}</b></td>
+      <td class="num">${t.ratio}</td>
+      <td class="num">${t.count}${t.count_mode === "ratio_of_population" ? " 份" : t.id === "T_MID" ? " 人" : " 份"}</td>
+      <td>${t.mode_label}</td>
+      <td>${badge(t.src)}</td>
+    </tr>`).join("");
+
+  /* 变更 */
+  if (cs.free) {
+    const hitN = it => cfg.downstream.filter(o =>
+      o.refs.some(r => r === it.path || r.startsWith(it.path + ".") || it.path.startsWith(r + "."))).length;
+    const rows = change.items.map(it => `
+      <div class="chgRow">
+        <span class="chgLbl">${it.label}</span>
+        <span class="chgFrom">${it.from}</span><span class="arrow">→</span><span class="chgTo">${it.to}</span>
+        <span class="chgCnt">${hitN(it) ? hitN(it) + " 个对象" : "无对象引用"}</span>
+      </div>`).join("");
+
+    el("changebox").innerHTML = `
+      <div class="ctrl">
+        <label>中档人数<input id="fMid" type="number" min="1" max="60" value="${FREE.mid}"></label>
+        <label>中档配比<input id="fRatio" type="number" min="1" max="60" value="${FREE.ratio}"></label>
+        <label>服务器人数<input id="fPop" type="number" min="100" max="20000" step="100" value="${FREE.pop}"></label>
+        <label>高档数量<input id="fHighC" type="number" min="1" max="20" value="${FREE.highCount}"></label>
+        <label>高档配比<input id="fHighR" type="number" min="1" max="500" value="${FREE.highRatio}"></label>
+        <label>开放门槛<input id="fOpen" type="number" min="0" max="365" value="${FREE.openMin}"></label>
+        <label class="chk"><input id="fSync" type="checkbox" ${FREE.syncDeclared ? "checked" : ""}>声明值跟随中档人数</label>
+      </div>
+      <div class="chgTitle">本次变更 ${change.items.length} 项${change.items.length ? "（可同时改多处）" : ""}</div>
+      <div class="chgList">${rows || '<div class="nochg">尚未改动，当前与原始配置一致。</div>'}</div>
+      ${change.derived.length ? `<div class="chgDerived">连带失效：${change.derived.map(d =>
+        `${d.label} 应重算为 ${d.to}（当前仍为 ${d.from}）`).join("；")}</div>` : ""}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+        <button class="mini" id="fDemo">套用示例：一次版本更新</button>
+        <button class="mini" id="fReset">恢复原始配置</button>
+      </div>`;
+
+    const on = (id, fn) => { const e = el(id); if (e) e.onchange = fn; };
+    on("fMid", e => { FREE.mid = Math.max(1, +e.value || 1); FREE.synced.clear(); render(); });
+    on("fRatio", e => { FREE.ratio = Math.max(1, +e.value || 1); FREE.synced.clear(); render(); });
+    on("fPop", e => { FREE.pop = Math.max(100, +e.value || 100); FREE.synced.clear(); render(); });
+    on("fHighC", e => { FREE.highCount = Math.max(1, +e.value || 1); FREE.synced.clear(); render(); });
+    on("fHighR", e => { FREE.highRatio = Math.max(1, +e.value || 1); FREE.synced.clear(); render(); });
+    on("fOpen", e => { FREE.openMin = Math.max(0, +e.value || 0); FREE.synced.clear(); render(); });
+    on("fSync", e => { FREE.syncDeclared = e.checked; FREE.synced.clear(); render(); });
+    const rb = el("fReset");
+    if (rb) rb.onclick = () => { syncFreeFromOrigin(); render(); };
+    const db = el("fDemo");
+    if (db) db.onclick = () => {
+      Object.assign(FREE, { mid: 8, ratio: 10, pop: 600, highCount: 2, highRatio: 100, openMin: 45, syncDeclared: true });
+      FREE.synced.clear(); render();
+    };
+  } else if (!change) {
+    el("changebox").innerHTML = `<div class="nochg">本例无变更。用于确认正常配置下不产生任何告警。</div>`;
+  } else {
+    const ch = change;
+    el("changebox").innerHTML = `
+      <div class="diff">
+        <span class="lbl">${ch.label}</span>
+        <span class="from">${ch.from}</span><span class="arrow">→</span><span class="to">${ch.to}</span>
+        <span class="lbl">${ch.path}</span>
+      </div>
+      <div class="lbl" style="margin-top:6px">已同步：${(ch.synced || []).map(id => cfg.downstream.find(o => o.id === id)?.name).join("、") || "无"}</div>`;
+  }
+
+  /* 依赖关系清单：把"已建模"这件事摊开给人看 */
+  const touched = new Set(
+    (change ? (change.fields || [change.path]) : [])
+      .flatMap(f => cfg.downstream.filter(o => o.refs.some(r => r === f || r.startsWith(f + ".") || f.startsWith(r + "."))).map(o => o.id))
+  );
+  const editable = cs.free && EDIT_DEPS;
+  if (editable) {
+    el("depTb").innerHTML = depList().map(o => `
+      <tr>
+        <td colspan="2" style="padding:7px 9px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+            <input class="objName" data-id="${o.id}" value="${o.name}"
+              style="flex:1;border:1px solid #D6DCE5;border-radius:4px;padding:3px 7px;
+              font-family:inherit;font-size:11.5px;font-weight:600;color:var(--ink)">
+            <span class="delObj" data-id="${o.id}"
+              style="font-size:10px;color:#B42318;cursor:pointer;white-space:nowrap">删除</span>
+          </div>
+          <div style="line-height:1.9">${FIELDS.map(f => `<span class="fchip ${o.refs.includes(f.p) ? "on" : ""}"
+            data-id="${o.id}" data-f="${f.p}">${f.l}</span>`).join("")}</div>
+        </td>
+      </tr>`).join("");
+
+    el("depTb").querySelectorAll(".fchip").forEach(c => {
+      c.onclick = () => {
+        const id = c.getAttribute("data-id"), f = c.getAttribute("data-f");
+        const obj = depList().find(o => o.id === id);
+        if (!DEP) DEP = clone(BASE.downstream);
+        const t = DEP.find(o => o.id === id);
+        t.refs.includes(f) ? t.refs = t.refs.filter(x => x !== f) : t.refs.push(f);
+        FREE.synced.clear(); render();
+      };
+    });
+    el("depTb").querySelectorAll(".objName").forEach(inp => {
+      inp.onchange = () => {
+        if (!DEP) DEP = clone(BASE.downstream);
+        const t = DEP.find(o => o.id === inp.getAttribute("data-id"));
+        if (t) t.name = inp.value.trim() || t.name;
+        render();
+      };
+    });
+    el("depTb").querySelectorAll(".delObj").forEach(b => {
+      b.onclick = () => {
+        if (!DEP) DEP = clone(BASE.downstream);
+        DEP = DEP.filter(o => o.id !== b.getAttribute("data-id"));
+        FREE.synced.clear(); render();
+      };
+    });
+  } else {
+    el("depTb").innerHTML = cfg.downstream.map(o => `
+      <tr style="${touched.has(o.id) ? "background:#FFFCFB" : ""}">
+        <td><b>${o.name}</b>${touched.has(o.id) ? ' <span class="st risk" style="font-size:9px;padding:1px 6px">受影响</span>' : ""}</td>
+        <td>${o.refs.length ? o.refs.map(r => `<code style="font-size:10.5px">${r}</code>`).join(" ") : '<span style="color:#B42318">未声明任何引用</span>'}</td>
+      </tr>`).join("");
+  }
+
+  /* 依赖卡底部操作区 */
+  const dn = el("depNote");
+  if (dn) {
+    if (cs.free) {
+      dn.innerHTML = `
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:7px">
+          <button class="mini" id="depEdit">${EDIT_DEPS ? "完成编辑" : "编辑这些关系"}</button>
+          <button class="mini" id="depAdd">+ 加一个对象</button>
+          <button class="mini" id="depExport">导出 JSON</button>
+          <button class="mini" id="depImport">导入配置</button>
+        </div>
+        <div>${EDIT_DEPS
+          ? "勾选这个对象实际会用到的字段。改完立刻重算，规则和影响面都会跟着变。"
+          : "只有这张表里登记过的引用，才会进入影响分析。<b>未登记的隐式依赖（文案写死的数字、公告图、截图）本版查不出来。</b>"}</div>`;
+      const bEdit = el("depEdit"), bAdd = el("depAdd"), bExp = el("depExport");
+      if (bEdit) bEdit.onclick = () => { EDIT_DEPS = !EDIT_DEPS; render(); };
+      if (bAdd) bAdd.onclick = () => {
+        if (!DEP) DEP = clone(BASE.downstream);
+        DEP.push({ id: "OBJ_NEW" + (++OBJ_SEQ), name: "新对象", type: "自定义",
+          refs: [], note: "手动添加，尚未验证。" });
+        EDIT_DEPS = true; render();
+      };
+      if (bExp) bExp.onclick = () => exportJson();
+      const bImp = el("depImport");
+      if (bImp) bImp.onclick = () => { const fi = el("fileInput"); if (fi) { fi.value = ""; fi.click(); } };
+    } else {
+      dn.innerHTML = `只有这张表里登记过的引用，才会进入影响分析。<b>未登记的隐式依赖（文案写死的数字、公告图、截图）本版查不出来。</b>`;
+    }
+  }
+
+  /* 规则 */
+  el("ruletag").textContent = fail.length ? `${fail.length} 条违反` : "三层规则均通过";
+  const GRP_LABEL = { oral: "口述", eng: "工程", sim: "模拟阈值" };
+  el("rulebox").innerHTML = rules.map(r => `
+    <div class="rule ${r.res.ok ? "" : "bad"}">
+      <div class="dot ${r.res.ok ? "ok" : "no"}">${r.res.ok ? "✓" : "!"}</div>
+      <div class="body">
+        <div class="top">
+          <span class="rid">${r.id}</span>
+          <span class="nm">${r.name}</span>
+          <span class="lv ${r.level === "高" ? "high" : ""}">${r.level}</span>
+          <span class="sp ${r.grp}">${GRP_LABEL[r.grp] || ""}</span>
+        </div>
+        <div class="dt">${r.res.detail}</div>
+      </div>
+    </div>`).join("");
+
+  /* 影响分析 */
+  if (!change || !change.fields.length) {
+    el("impbox").innerHTML = `<div class="empty">本例无变更，没有需要分析的影响面。</div>`;
+  } else if (!impact.objects.length) {
+    el("impbox").innerHTML = `<div class="empty">被改的字段没有被任何下游对象引用。</div>`;
+  } else {
+    el("impbox").innerHTML = impact.objects.map(o => `
+      <div class="imp ${o.synced ? "" : "risk"}" ${cs.free ? `data-id="${o.id}" style="cursor:pointer"` : ""}>
+        <div class="row1">
+          <div><span class="nm">${o.name}</span><span class="ty">${o.type}</span></div>
+          <span class="st ${o.synced ? "ok" : "risk"}">${o.synced ? "已同步" : (cs.free ? "待确认 · 点我标记" : "未同步")}</span>
+        </div>
+        <div class="refs">${o.refs.filter(r => impact.fields.some(f => r === f || r.startsWith(f + ".") || f.startsWith(r + ".")))
+          .map(r => `<code>${r}</code>`).join("")}</div>
+        <div class="note">${o.note}</div>
+      </div>`).join("");
+
+    if (cs.free) {
+      el("impbox").querySelectorAll(".imp[data-id]").forEach(node => {
+        node.onclick = () => {
+          const id = node.getAttribute("data-id");
+          FREE.synced.has(id) ? FREE.synced.delete(id) : FREE.synced.add(id);
+          render();
+        };
+      });
+    }
+  }
+
+  /* 变更确认单：把这一屏变成能发给别人对的清单 */
+  if (change && (impact.objects.length || fail.length)) {
+    el("impbox").innerHTML += `
+      <div class="impActions">
+        <button class="mini" id="btnCopy">复制清单（直接粘）</button>
+        <button class="mini" id="btnMd">导出 .md</button>
+        <span class="lbl" style="align-self:center">发给要改的人，一人一项签字</span>
+      </div>`;
+    const sheet = () => confirmSheet(cs, cfg, change, rules, fail, impact);
+    const bCopy = el("btnCopy"), bMd = el("btnMd");
+    if (bCopy) bCopy.onclick = () => {
+      const txt = confirmSheet(cs, cfg, change, rules, fail, impact, true);
+      const done = () => { bCopy.textContent = "已复制"; setTimeout(() => { bCopy.textContent = "复制清单"; }, 1600); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(done).catch(() => fallbackCopy(txt, done));
+      } else { fallbackCopy(txt, done); }
+    };
+    if (bMd) bMd.onclick = () => downloadText(`变更确认单_${cfg.activity.id}.md`, sheet());
+  }
+
+  /* 标题栏常驻出口，免得藏在最底下找不到 */
+  const itag = el("impTag");
+  if (itag) {
+    if (change && (impact.objects.length || fail.length)) {
+      itag.innerHTML = `<button class="mini" id="btnTop">导出清单</button>`;
+      const bt = el("btnTop");
+      if (bt) bt.onclick = () => downloadText(`变更确认单_${cfg.activity.id}.md`,
+        confirmSheet(cs, cfg, change, rules, fail, impact));
+    } else {
+      itag.innerHTML = "按声明的引用关系推导，非语义猜测";
+    }
+  }
+
+  renderTabs();
+}
+
+render();
+
+/* 导入：读本地 JSON，校验后换基线 */
+(function bindImport() {
+  const fi = el("fileInput");
+  if (!fi) return;
+  fi.onchange = () => {
+    const f = fi.files && fi.files[0];
+    if (!f) return;
+    const rd = new FileReader();
+    rd.onload = () => {
+      const err = loadConfig(String(rd.result), f.name);
+      if (err) { alert("导入失败：" + err); return; }
+      render();
+    };
+    rd.readAsText(f, "utf-8");
+  };
+})();
+</script>
+</body>
+</html>

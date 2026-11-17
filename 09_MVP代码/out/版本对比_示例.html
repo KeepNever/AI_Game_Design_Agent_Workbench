@@ -1,0 +1,96 @@
+<!DOCTYPE html><html lang='zh-CN'><head><meta charset='UTF-8'>
+<title>变更确认单 · 霜月祭</title>
+<style>
+:root{--navy:#17365D;--ink:#1F2937;--muted:#6B7280;--line:#E5E7EB;--bg:#F5F7FA;
+--pass:#0F7B4F;--passbg:#E6F4EA;--fail:#B42318;--failbg:#FBE9E7;--warn:#B54708;--warnbg:#FFF4E0;
+--oral:#1D4ED8;--oralbg:#E8EEFB;--sim:#92400E;--simbg:#FDF3E3;--infer:#6D28D9;--inferbg:#F3EBFF;
+--eng:#0F6E56;--engbg:#E1F5EE;}
+*{box-sizing:border-box;}
+body{margin:0;padding:24px 26px 40px;background:var(--bg);color:var(--ink);
+font-family:"微软雅黑","Microsoft YaHei",system-ui,sans-serif;font-size:13px;line-height:1.65;}
+.wrap{max-width:1080px;margin:0 auto;}
+header{background:var(--navy);border-radius:10px;padding:18px 22px 16px;color:#fff;}
+h1{margin:0;font-size:19px;font-weight:700;letter-spacing:.3px;}
+.sub{margin-top:5px;font-size:11.5px;color:#B9C7DA;line-height:1.6;}
+.meta{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+.chip{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18);
+border-radius:20px;padding:3px 11px;font-size:10.5px;color:#DCE6F2;}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0;}
+.stat{background:#fff;border:1px solid var(--line);border-radius:9px;padding:12px 14px;}
+.stat .n{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;}
+.stat .l{font-size:11px;color:var(--muted);margin-top:2px;}
+.card{background:#fff;border:1px solid var(--line);border-radius:9px;margin-bottom:14px;overflow:hidden;}
+.hd{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;
+border-bottom:1px solid var(--line);background:#FAFBFC;}
+.hd h2{margin:0;font-size:12.5px;font-weight:700;color:var(--navy);}
+.hd .tag{font-size:10px;color:var(--muted);}
+.bd{padding:12px 14px;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{background:#F3F6FA;color:var(--navy);font-weight:600;text-align:left;padding:7px 9px;
+border-bottom:1px solid var(--line);font-size:11.5px;white-space:nowrap;}
+td{padding:7px 9px;border-bottom:1px solid #F0F2F5;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+code{background:#F3F5F9;border:1px solid #E7EBF1;border-radius:4px;padding:1px 5px;
+font-family:Consolas,monospace;font-size:11px;color:#334155;}
+.from{color:#9AA4B2;text-decoration:line-through;font-variant-numeric:tabular-nums;}
+.to{color:var(--fail);font-weight:700;font-variant-numeric:tabular-nums;}
+.badge{display:inline-block;font-size:10px;padding:1px 7px;border-radius:10px;font-weight:600;}
+.b-oral{color:var(--oral);background:var(--oralbg);}
+.b-eng{color:var(--eng);background:var(--engbg);}
+.b-sim{color:var(--sim);background:var(--simbg);}
+.b-infer{color:var(--infer);background:var(--inferbg);}
+.ok{color:var(--pass);background:var(--passbg);}
+.no{color:var(--fail);background:var(--failbg);}
+.q{color:var(--warn);background:var(--warnbg);}
+.obj{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid #F0F2F5;}
+.obj:last-child{border-bottom:none;}
+.obj input{margin-top:3px;transform:scale(1.2);}
+.obj .nm{font-weight:600;}
+.obj .ow{color:var(--muted);font-size:11px;}
+.hint{background:var(--warnbg);border:1px solid #F2C94C;border-radius:8px;
+padding:10px 14px;font-size:12px;margin-bottom:14px;}
+.hint b{color:var(--warn);}
+.notes{background:#fff;border:1px solid var(--line);border-radius:9px;padding:12px 16px;font-size:12px;color:#374151;}
+.notes h3{margin:0 0 8px;font-size:12.5px;color:var(--navy);}
+.notes ol{margin:0;padding-left:20px;}
+.notes li{margin-bottom:5px;}
+footer{margin-top:14px;font-size:11px;color:var(--muted);text-align:center;}
+</style></head><body><div class='wrap'>
+<header>
+<h1>变更确认单 · 霜月祭</h1>
+<div class='sub'>改一个配置之后，哪些地方要跟着改——由已登记的引用关系推导，非语义猜测　|　生成于 2026-11-10 20:13</div>
+<div class='meta'><span class='chip'>ACT-1109-01</span><span class='chip'>规则 6/8 通过，2 条违反</span><span class='chip'>待确认对象 2 个</span><span class='chip'>v0.1 · 冻结 2026-11-10</span></div></header>
+<div class='stats'>
+<div class='stat'><div class='n' style='color:var(--ink)'>1</div><div class='l'>本次改动</div></div>
+<div class='stat'><div class='n' style='color:var(--ink)'>1</div><div class='l'>连带失效</div></div>
+<div class='stat'><div class='n' style='color:var(--fail)'>2</div><div class='l'>规则违反</div></div>
+<div class='stat'><div class='n' style='color:var(--ink)'>2</div><div class='l'>待确认对象</div></div>
+</div>
+<div class='card'><div class='hd'><h2>一、本次改动</h2><span class='tag'>旧的划掉，新的标红</span></div><div class='bd'>
+<table><tr><th style='width:160px'>字段</th><th>变化</th><th style='width:220px'>字段路径</th></tr>
+<tr><td>活动 · 服务器人数</td><td><span class='from'>1200</span> → <span class='to'>600</span></td><td><code>activity.server_population</code></td></tr>
+</table></div></div>
+<div class='card'><div class='hd'><h2>二、连带失效</h2><span class='tag'>改了上游，这些值要重算</span></div><div class='bd'>
+<table><tr><th>字段</th><th>当前配置</th><th>按公式应为</th><th>原因</th></tr>
+<tr><td><code>tiers.T_LOW.count</code></td><td>120</td><td class='to'>60</td><td style='color:var(--muted)'>低档份数按人数比例推导，人数一变就要重算</td></tr>
+</table></div></div>
+<div class='card'><div class='hd'><h2>三、规则检查 · 6/8 通过，2 条违反</h2><span class='tag'>来源分层，不合成总数</span></div><div class='bd'>
+<table><tr><th style='width:64px'>规则</th><th>名称</th><th style='width:70px'>级别</th><th style='width:90px'>来源</th><th style='width:96px'>结果</th><th>说明</th></tr>
+<tr><td><code>R-01</code></td><td>产出比 1:10:100</td><td>阻断</td><td><span class="badge b-oral">口述</span></td><td><span class="badge ok">✓ 通过</span></td><td style='color:var(--muted)'>低 / 中 / 高三档产出比必须为 1:10:100（受访者原话「1:10:100」）</td></tr>
+<tr><td><code>R-02</code></td><td>头奖唯一</td><td>阻断</td><td><span class="badge b-oral">口述</span></td><td><span class="badge ok">✓ 通过</span></td><td style='color:var(--muted)'>高档产出数量必须为 1（原话「最厉害的那个只能出现一个」）</td></tr>
+<tr><td><code>R-03</code></td><td>中档人数与声明一致</td><td>阻断</td><td><span class="badge b-eng">工程假设</span></td><td><span class="badge ok">✓ 通过</span></td><td style='color:var(--muted)'>实际配置人数必须等于声明值（工程自建：防手改配置未同步口径，无受访者依据）</td></tr>
+<tr><td><code>R-04</code></td><td>低档按人数比例推导</td><td>高</td><td><span class="badge b-oral">口述</span></td><td><span class="badge no">✗ 违反</span></td><td style='color:var(--muted)'>低档份数与「人数 × 比例」算出来的不一致</td></tr>
+<tr><td><code>R-05</code></td><td>中档占比落在区间内</td><td>高</td><td><span class="badge b-sim">模拟阈值</span></td><td><span class="badge no">✗ 违反</span></td><td style='color:var(--muted)'>中档占比超出 0.3%–0.6%</td></tr>
+<tr><td><code>R-06</code></td><td>覆盖人数不超过服务器人数</td><td>阻断</td><td><span class="badge b-eng">工程假设</span></td><td><span class="badge ok">✓ 通过</span></td><td style='color:var(--muted)'>各档覆盖人数之和不得大于服务器当前人数（工程自建）</td></tr>
+<tr><td><code>R-07</code></td><td>下游引用字段必须存在</td><td>阻断</td><td><span class="badge b-eng">工程假设</span></td><td><span class="badge ok">✓ 通过</span></td><td style='color:var(--muted)'>下游对象声明的引用路径必须能在配置里解析（工程自建）</td></tr>
+<tr><td><code>R-08</code></td><td>开服天数满足开放门槛</td><td>高</td><td><span class="badge b-oral">口述</span></td><td><span class="badge ok">✓ 通过</span></td><td style='color:var(--muted)'>当前开服天数必须达到活动开放门槛</td></tr>
+</table>
+<div style='margin-top:9px;font-size:11px;color:var(--muted)'>分层看：口述 3/4，工程假设 3/3，模拟阈值 0/1——三层各自通过只说明这套数据自洽，不等于业务规则全对。</div>
+</div></div>
+<div class='card'><div class='hd'><h2>四、需要确认的对象 · 2 个</h2><span class='tag'>勾选 = 人工确认已同步</span></div><div class='bd'>
+<div class='obj'><input type='checkbox'><div style='flex:1'><span class='nm'>掉落实体配置</span> <span class='ow'>（数值策划 · 派生失效）</span><br><code>tiers.T_LOW.count</code></div></div>
+<div class='obj'><input type='checkbox'><div style='flex:1'><span class='nm'>发奖邮件模板</span> <span class='ow'>（运营 · 派生失效）</span><br><code>tiers.T_LOW.count</code></div></div>
+</div></div>
+<div class='notes'><h3>口径 · 这张单能证明什么，不能证明什么</h3><ol><li><b>只核对已登记的引用。</b>文案里手写的数字、公告图、截图里的旧值，本表查不出来。</li><li><b>「已同步」是勾出来的。</b>系统只知道受影响，不知道有没有人去改；勾选框是人工确认。</li><li><b>没列出来的对象 ≠ 没有影响</b>，只是没登记。想让谁出现在这里，先把引用登记进配置。</li></ol></div>
+<footer>Game Design Workbench v0.1 · 独立生成 · fixtures/activity_v0.1.yaml</footer>
+</div></body></html>

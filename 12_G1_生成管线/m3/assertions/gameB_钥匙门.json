@@ -1,0 +1,13 @@
+{
+  "game": "gameB_钥匙门",
+  "scenarios": [
+    { "kind": "mechanism", "name": "B-L0 无钥匙门禁拦断", "level": 0, "moves": "DDRRRR",
+      "assertions": [
+        { "afterStep": 6, "type": "moved", "value": false },
+        { "afterStep": 6, "type": "playerAt", "x": 4, "y": 3 },
+        { "afterStep": 6, "type": "var", "key": "keys", "value": 0 },
+        { "type": "win", "value": false } ] },
+    { "kind": "path-replay", "name": "B-L0 通关路径重放（GT-1 求解 → 逐步重放）", "level": 0,
+      "assertions": [ { "type": "win", "value": true } ] }
+  ]
+}

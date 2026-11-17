@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 游戏设计工作台 · 一页概览</title>
+<style>
+  :root{
+    --navy:#17365D; --ink:#1F2937; --muted:#6B7280; --line:#E5E7EB;
+    --bg:#F7F8FA; --warn:#B54708; --pass:#0F7B4F;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; padding:40px 24px 60px; background:var(--bg); color:var(--ink);
+    font-family:"微软雅黑","Microsoft YaHei",system-ui,sans-serif;
+    font-size:14px; line-height:1.75; -webkit-font-smoothing:antialiased;
+  }
+  .page{max-width:960px;margin:0 auto;background:#fff;border:1px solid var(--line);
+    border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(16,24,40,.04);}
+
+  header{padding:34px 44px 28px;border-bottom:1px solid var(--line);}
+  header .kicker{font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
+  header h1{margin:10px 0 8px;font-size:26px;font-weight:700;letter-spacing:.5px;color:var(--navy);line-height:1.35;}
+  header .lead{font-size:15px;color:#374151;max-width:660px;}
+  header .meta{margin-top:16px;display:flex;gap:18px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);}
+  header .meta b{color:var(--ink);font-weight:600;}
+
+  section{padding:28px 44px;border-bottom:1px solid #F0F2F5;}
+  section:last-of-type{border-bottom:none;}
+  h2{font-size:13px;font-weight:700;color:var(--navy);letter-spacing:1px;margin:0 0 14px;
+    display:flex;align-items:center;gap:10px;}
+  h2::before{content:"";width:3px;height:14px;background:var(--navy);border-radius:2px;}
+  h2 .n{font-size:11px;color:#9AA4B2;font-weight:400;letter-spacing:0;}
+
+  .quotes{display:grid;gap:10px;margin-bottom:14px;}
+  .q{background:#FAFBFC;border-left:3px solid #C9D6E8;border-radius:0 6px 6px 0;
+    padding:9px 14px;font-size:13px;color:#374151;}
+  .q span{display:block;font-size:11px;color:var(--muted);margin-top:3px;}
+
+  .case{background:#FFFBF5;border:1px solid #F5E2C8;border-radius:6px;
+    padding:10px 14px;font-size:12.5px;color:#7A4A11;line-height:1.7;}
+  .case b{color:#8A3F09;}
+
+  .work{display:grid;gap:22px;}
+  .item{display:grid;grid-template-columns:1fr 286px;gap:20px;align-items:start;
+    padding-bottom:22px;border-bottom:1px dashed #E7EBF1;}
+  .item:last-child{border-bottom:none;padding-bottom:0;}
+  .shot{position:relative;max-height:400px;overflow:hidden;border:1px solid var(--line);
+    border-radius:6px;background:#fff;}
+  .shot img{width:100%;display:block;}
+  .shot::after{content:"";position:absolute;left:0;right:0;bottom:0;height:56px;
+    background:linear-gradient(to bottom,rgba(255,255,255,0),#fff);}
+  .item .t{font-size:14.5px;font-weight:700;color:var(--ink);margin-bottom:5px;}
+  .item .t em{font-style:normal;font-size:10px;font-weight:600;color:#fff;background:var(--navy);
+    border-radius:9px;padding:1px 8px;margin-left:7px;vertical-align:2px;}
+  .item p{margin:0 0 8px;font-size:12.5px;color:#4B5563;}
+  .item .fact{font-size:11.5px;color:var(--muted);border-top:1px dashed #EDF0F4;padding-top:7px;margin-top:9px;}
+  .item .fact b{color:var(--warn);font-weight:600;}
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  th{background:#F3F6FA;color:var(--navy);font-weight:600;text-align:left;padding:7px 10px;
+    border-bottom:1px solid var(--line);font-size:11.5px;}
+  td{padding:7px 10px;border-bottom:1px solid #F3F5F8;vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  .tag{display:inline-block;font-size:10.5px;padding:1px 8px;border-radius:9px;font-weight:600;}
+  .tag.ok{background:#E6F4EA;color:var(--pass);}
+  .tag.no{background:#F3F4F6;color:#6B7280;}
+  .tag.part{background:#FFF4E0;color:var(--warn);}
+
+  .limits{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;}
+  .lim{background:#FAFBFC;border:1px solid #EDF0F4;border-radius:6px;padding:10px 12px;font-size:12px;color:#4B5563;}
+  .lim b{display:block;color:var(--ink);font-size:11.5px;margin-bottom:3px;}
+
+  footer{padding:18px 44px 26px;font-size:11.5px;color:var(--muted);background:#FAFBFC;
+    border-top:1px solid var(--line);}
+
+  @media print{
+    body{background:#fff;padding:0;font-size:12px;}
+    .page{border:none;box-shadow:none;border-radius:0;max-width:none;}
+    section{padding:20px 0;}
+    header{padding:0 0 18px;}
+    footer{padding:14px 0;}
+  }
+  @media (max-width:760px){
+    body{padding:16px 10px;}
+    header,section,footer{padding-left:20px;padding-right:20px;}
+    .item{grid-template-columns:1fr;}
+    .limits{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="kicker">Case Study　2026.11</div>
+    <h1>AI 游戏设计工作台<br><span style="font-size:18px;color:#4B5563;font-weight:400;">把设计对象之间的引用关系，变成可检查、可交接的东西</span></h1>
+    <p class="lead">
+      面向游戏策划的 AI 辅助工作台。核心不是生成内容，而是回答一个问题：
+      <b>改了一个设计对象之后，还有哪些地方要跟着改，谁改。</b>
+    </p>
+    <div class="meta">
+      <span>阶段：<b>可运行产品 v0.2（切入点内功能齐）</b></span>
+      <span>访谈：<b>5 份（游戏行业 3 份）+ 7 例公开事故</b></span>
+      <span>产品：<b>命令行 + 本地工作台</b>　<span>原型并入产品：<b>3 / 3</b></span>
+      <span>测试：<b>157 个，全绿</b>　<span>变异评测检出率：<b>4/5</b></span>
+      <span>角色：<b>独立完成（研究 / 设计 / 开发 / 测试）</b></span>
+    </div>
+  </header>
+
+  <section>
+    <h2>一、问题从哪来 <span class="n">不是猜想，是三个人说出来的</span></h2>
+    <div class="quotes">
+      <div class="q">「每个关卡都有一个锚点，你需要触发这个锚点之后，才能引出下一步……这个 NPC 你只有打完前置任务才能认识。」
+        <span>叙事关卡策划 · 小型团队</span></div>
+      <div class="q">「出了新的机制我们会考虑是否能和之前已有的机制做联动，这个需要重新做设定，一般靠灵光乍现。」
+        <span>放置类活动策划 · 中型团队</span></div>
+      <div class="q">「长期更新的项目，剧情积累越多越容易出现细节遗漏。」
+        <span>剧情策划 · 大型团队</span></div>
+    </div>
+    <div class="case">
+      <b>公开案例（2025-10，台服端游）：</b>福袋公告里的奖项名称与数量写错，厂商确认「系統運作無異常」——<b>系统没错，错在公告</b>，仍要对期间购买者统一补偿。
+      <br><b>另一例的整改办法更能说明问题：</b>某厂公告把 100000 写成 10000，补发并开放退款之后，改进措施是「在数字后面加中文大写（如 100000（十万））」——<b>防错落在了写公告的人身上</b>。<span style="color:#6B7280;">（这只能说明业内有这种人工关卡，不能说明他们没有别的校验工具。）</span>
+      这类问题的成本几乎全在「找出哪里没同步」，而不在「改」。
+    </div>
+  </section>
+
+  <section>
+    <h2>二、做了什么 <span class="n">三个能跑的东西，不是三份方案</span></h2>
+    <div class="work">
+
+      <div class="item">
+        <div>
+          <div class="shot"><img src="assets/p1_q013.png" alt="Q013 三态判定"></div>
+        </div>
+        <div>
+          <div class="t">① 路径条件可满足性判定 <em>三态</em></div>
+          <p>给定任务图与状态变量，判断某个结局是否真的能被触发。输出不是「通过 / 不通过」，而是 SAT（存在合法路径）/ UNSAT（不存在）/ UNKNOWN（搜索触顶）。</p>
+          <p><b>UNKNOWN 不降级为通过</b>——这是它和普通校验工具最大的区别。</p>
+          <div class="fact"><b>实测：</b>四个用例分别命中 SAT / UNSAT / UNKNOWN / SAT，UNSAT 会指出阻断边与变量观测到的最大取值。<b>✅ 已并入产品内核</b>（<code>gdw/quest.py</code>，命令行 + 工作台均可调）。</div>
+        </div>
+      </div>
+
+      <div class="item">
+        <div>
+          <div class="shot"><img src="assets/p2_wuyin.png" alt="任务结构检查报告"></div>
+        </div>
+        <div>
+          <div class="t">② 任务结构检查报告 <em>可读诊断</em></div>
+          <p>一条 16 节点、3 个变量、3 个结局的完整支线，被查出 3 处设计错误。</p>
+          <p>其中一处是<b>循环依赖</b>：进「守林人草棚」要求「见过守林人」，而「见过守林人」只有进了草棚才会获得——要进去才能得到，要得到才能进去。</p>
+          <div class="fact"><b>输出：</b>不是「不可满足」，而是「差 1 条线索，卡在 n2 → hidden_end 这条边」。<b>能修的诊断</b>才有人用第二次。<b>✅ 已并入产品内核</b>（<code>gdw/structure.py</code>，S1–S5 五类结构检查，移植时还新发现一处原报告漏掉的设计错误）。</div>
+        </div>
+      </div>
+
+      <div class="item">
+        <div>
+          <div class="shot"><img src="assets/p3_impact.png" alt="配置变更影响分析"></div>
+        </div>
+        <div>
+          <div class="t">③ 配置变更影响分析 <em>可交接</em></div>
+          <p>改一个活动数值，系统列出所有引用它的下游对象（排行榜、发奖邮件、公告、客服 FAQ），区分「已同步」和「待确认」。</p>
+          <p>最有力的一屏：<b>规则全部通过，但仍有 3 处没同步</b>——合规与一致是两个问题。</p>
+          <div class="fact"><b>输出：</b>一份可粘进群的变更确认单，逐项列负责人空位。<b>从「检查器」变成「派活的东西」。</b></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>二·五、从原型到产品 <span class="n">同一个下午：内核、压测、界面、用户实测修复</span></h2>
+    <p style="font-size:13px;color:#4B5563;margin:-4px 0 14px;line-height:1.75;">
+      原型证明"能做"，产品才谈"有用没用"。变更影响分析被验证后，我把它的内核重写成了一个
+      <b>带 157 个测试的 Python 包</b>：命令行 + 本地工作台，读真表、扛脏表，当天被第一位用户实测抓出 bug、当晚修复。
+      随后另两个原型也并入同一内核，并用<b>变异评测</b>给检查器出了第一份定量成绩单。
+    </p>
+    <div class="work">
+
+      <div class="item">
+        <div>
+          <div class="shot"><img src="assets/p4_webui.png" alt="本地工作台"></div>
+        </div>
+        <div>
+          <div class="t">④ 本地工作台 <em>上传 → 改数 → 勾选 → 导出</em></div>
+          <p>一条命令 <code>python -m gdw web</code> 起一个本地工具：拖入任意配置表（xlsx / yaml / json），
+          每个字段可直接改，点一下算出影响面，逐项勾「已同步」，导出带勾选状态的确认单。</p>
+          <p>扛脏表：合并单元格标题、表头不在第一行、中文表头、数字存成文本、引用分隔符混用——
+          用一份故意做脏的表压测并钉进测试。</p>
+          <div class="fact"><b>数据入口：</b>xlsx / yaml / json 三种；跨表引用支持多跳
+          （改道具名，引用它的浮窗和掉落预览会一起进影响面）。<b>零第三方运行时依赖。</b></div>
+        </div>
+      </div>
+
+      <div class="item">
+        <div>
+          <div class="shot"><img src="assets/p5_report.png" alt="一键 HTML 报告"></div>
+        </div>
+        <div>
+          <div class="t">⑤ 一键确认单报告 <em>先说人话，再看字段</em></div>
+          <p>跑一条命令得到自包含网页：开头一段自然语言（改了什么、哪里不对、谁得跟着动——按负责人分组），
+          后面才是规则表和字段路径。来源分层展示，<b>不把 8/8 合成一句话</b>。</p>
+          <p>勾选框是真实的——收件人直接勾，打印出来就是纸面确认单。</p>
+          <div class="fact"><b>实测记录：</b>上线第一天用户抓到「换规则包清空配置、页面却不刷新」的状态错位 bug，
+          当晚修复并把新语义钉进测试。<b>设计对不对，要等有人真的走一遍才知道。</b></div>
+        </div>
+      </div>
+
+    </div>
+    <p style="font-size:13px;color:#4B5563;margin:14px 0 0;line-height:1.75;">
+      <b>v0.2 追加（2026-11-11）：</b>任务可达性三态与结构检查并入同一内核（三原型 3/3）；
+      新增<b>变异评测</b>——往任务图基准里注入 5 处确定性破坏，强检出 3 / 仅提示 1 / <b>漏报 1（如实报告并写明原因）</b>，
+      检出率 4/5；工作台补上勾选状态落盘（重传同一配置自动恢复）与两版本一键 diff。
+      <b>到此切入点内功能收口，后续迭代只等真实使用反馈。</b>
+    </p>
+  </section>
+
+  <section>
+    <h2>三、验证到哪一步 <span class="n">诚实标注，不凑结论</span></h2>
+    <p style="font-size:13px;color:#4B5563;margin:-4px 0 14px;line-height:1.75;">
+      表里只回答「我知道什么、不知道什么」。<b>事故证据（问题存在）和能力证据（原型做到什么）分开看</b>——两组材料不互相顶替：公开事故证明问题真实，证明不了原型有用。
+    </p>
+    <table>
+      <thead><tr><th style="width:120px">假设</th><th style="width:96px">状态</th><th>依据与限制</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>V-01 设计对象之间存在需要人工维护的依赖</td>
+          <td><span class="tag ok">已验证</span></td>
+          <td>一位活动策划明确描述了「改奖励人数后，回头查排行榜、邮件、公告」的实际动作。</td>
+        </tr>
+        <tr>
+          <td>V-02 这种维护会漏，且漏了有后果</td>
+          <td><span class="tag ok">已验证<em style="display:block;font-style:normal;font-size:10px;opacity:.75;">仅问题层</em></span></td>
+          <td>五例公开事故公告（剑网一 / 三国群英传2 / 武林同萌傳 / 龙图智库 / 全民小镇），厂商自认「公告与实际不一致」并补发、退款、甚至把实际概率永久上调。<b>限制：五例全部发生在运营公告环节，没有一例是策划改配置表后下游没跟。</b>证明的是「不一致会发生且有代价」，不是「策划岗普遍如此」，更不是「本原型能解决」。</td>
+        </tr>
+        <tr>
+          <td>V-03 现有方式需要持续人工投入</td>
+          <td><span class="tag ok">已验证</span></td>
+          <td>核对依赖「配置表 + 需求文档 + 历史版本」逐项进行，有载体但检查动作由人完成。<b>这条是独立证据（访谈），不由 V-02 代替。</b></td>
+        </tr>
+        <tr>
+          <td colspan="3" style="background:#FAFBFC;color:#4B5563;">
+            <b>当前组合：A</b>——依赖存在、会漏、漏了有代价、且现在靠人维持。<b>但 A 只成立在「问题层」</b>：不包含岗位层（策划侧只有一位受访者口述），也不包含方案层（原型价值未验证，见第四节第 4 条）。
+            能写到这一步：<b>问题真实存在且有成本</b>。不能写「策划岗普遍如此」，也不能写「现有工具能解决」。
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>四、边界 <span class="n">这些是限制，不是待办</span></h2>
+    <div class="limits">
+      <div class="lim"><b>只做显式依赖</b>影响分析只沿「已登记」的引用推导。文案里写死的数字、公告图、截图里的旧数值，本版查不出来。</div>
+      <div class="lim"><b>数据是分层的</b>口述 / 模拟 / 推断三层标注。服务器人数、占比区间等都是占位值，不能当真实业务规则使用。</div>
+      <div class="lim"><b>样本只有 1 份</b>有效访谈来自一位活动策划。其他两位岗位不同，不能合并成「受访者普遍认为」。</div>
+      <div class="lim"><b>公开事故不在本版的能力范围内</b>五例事故的错都长在「公告里手写的数字和描述」上，而本版只检查已登记的字段引用。<b>问题最密集的地方，正好在它的边界外——这是下一版要解决的，不是已经解决的。</b></div>
+      <div class="lim"><b>v0.1 已冻结</b>边界到这里为止，不再为了多覆盖几个案例而扩功能。「让配置直接生成公告」记进下一版候选池，先不动手。</div>
+    </div>
+  </section>
+
+  <footer>
+    下一步：v0.1 就地冻结（2026-11-10）。两件事按顺序：① 用一份真实或脱敏的活动配置表替换模拟数据，验证 Schema 与规则能否迁移；
+    ② 问清「公告是模板套字段、还是每次手写」——这句话决定边界要不要改。在此之前不扩功能。
+    <br>2026-11 · 独立项目 · 所有原型可运行
+  </footer>
+
+</div>
+</body>
+</html>

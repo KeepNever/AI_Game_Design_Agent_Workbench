@@ -1,0 +1,62 @@
+{
+  "note": "G1 工作台 · 7 个调优样本 Brief 清单（前置 3 §四 7+3 分离口径的调优侧；3 个独立验证样本不在此列、严格隔离）。A–D 原文引自 11_Spike_网格解谜/生成档案_三Brief.md 与 生成档案_BriefD_一次性生成.md；E 引自 G1 端到端演示；F/G 为新增调优样本（既有机制变体）。tune-f 内建首回合失败注入（win 含未知函数 → Schema 闸门拦截）用于演示重试链路——该注入在 Mock 传输层实施并如实标注，非真实模型行为。",
+  "mockUsage": { "prompt_tokens": 3500, "completion_tokens": 1200 },
+  "briefs": [
+    {
+      "id": "tune-a",
+      "title": "推箱到目标点",
+      "text": "核心机制：玩家移动、箱子推动、位置约束、箱子到达目标点。",
+      "source": "生成档案_三Brief.md · Brief A（2026-11-11）",
+      "mockCandidate": "tune-a.json",
+      "injectFirstFailure": false
+    },
+    {
+      "id": "tune-b",
+      "title": "收集钥匙开启出口",
+      "text": "核心机制：物品收集、钥匙库存、门锁状态、条件解锁、出口目标。",
+      "source": "生成档案_三Brief.md · Brief B（2026-11-11）",
+      "mockCandidate": "tune-b.json",
+      "injectFirstFailure": false
+    },
+    {
+      "id": "tune-c",
+      "title": "碎裂地板",
+      "text": "玩家踩过某个格子后，该格子开始倒计时，两回合后会碎裂并变成不可通行区域。玩家需要合理规划路线，在不被封死的情况下到达出口。",
+      "source": "生成档案_三Brief.md · Brief C（MU-10 试金石，2026-11-11）",
+      "mockCandidate": "tune-c.json",
+      "injectFirstFailure": false
+    },
+    {
+      "id": "tune-d",
+      "title": "开关闸门",
+      "text": "地上有两种踏板：开门踏板与关门踏板。踩到开门踏板，同组的闸门会打开并保持打开；踩到关门踏板，同组的闸门会关闭并保持关闭。关着的闸门不能通过。",
+      "source": "生成档案_BriefD_一次性生成.md（2026-11-11，助手代拟）",
+      "mockCandidate": "tune-d.json",
+      "injectFirstFailure": false
+    },
+    {
+      "id": "tune-e",
+      "title": "按序踩灯",
+      "text": "设计一个按序踩灯机制的网格解谜游戏（三盏灯按序点亮后出口开启）",
+      "source": "G1 端到端演示 Brief（2026-11-16）",
+      "mockCandidate": "tune-e.json",
+      "injectFirstFailure": false
+    },
+    {
+      "id": "tune-f",
+      "title": "三钥匙连环门（变体 · 重试演示）",
+      "text": "核心机制：物品收集、钥匙库存、门锁状态、条件解锁、出口目标（三钥匙连环门变体）。",
+      "source": "新增调优样本（B 机制变体）· 首回合失败为 Mock 注入演示，非真实模型行为",
+      "mockCandidate": "tune-f.json",
+      "injectFirstFailure": true
+    },
+    {
+      "id": "tune-g",
+      "title": "碎裂回廊（变体）",
+      "text": "玩家踩过某个格子后，该格子开始倒计时并最终碎裂成不可通行区域，需要规划不被封死的路线到达出口（碎裂回廊变体）。",
+      "source": "新增调优样本（C 机制变体）",
+      "mockCandidate": "tune-g.json",
+      "injectFirstFailure": false
+    }
+  ]
+}

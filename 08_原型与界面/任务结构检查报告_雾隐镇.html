@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>任务结构检查报告 · 雾隐镇失踪事件</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    background: #f5f6f8; color: #1f2937; line-height: 1.6;
+    padding: 28px 32px 40px;
+  }
+  .wrap { max-width: 1280px; margin: 0 auto; }
+
+  header { border-bottom: 2px solid #17365d; padding-bottom: 12px; margin-bottom: 20px; }
+  h1 { font-size: 21px; color: #17365d; font-weight: 700; letter-spacing: .5px; }
+  .sub { font-size: 12.5px; color: #6b7280; margin-top: 5px; }
+  .sub b { color: #b45309; }
+
+  .summary { display: flex; gap: 14px; margin-bottom: 20px; }
+  .card {
+    flex: 1; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;
+    padding: 13px 16px; border-left-width: 4px;
+  }
+  .card.pass { border-left-color: #16a34a; }
+  .card.fail { border-left-color: #dc2626; }
+  .card.warn { border-left-color: #d97706; }
+  .card .k { font-size: 11.5px; color: #6b7280; margin-bottom: 3px; }
+  .card .v { font-size: 19px; font-weight: 700; }
+  .card.pass .v { color: #15803d; }
+  .card.fail .v { color: #b91c1c; }
+  .card.warn .v { color: #b45309; }
+  .card .n { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+
+  .main { display: flex; gap: 18px; align-items: flex-start; }
+  .canvas-box { flex: 1.45; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px; }
+  .panel { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+
+  .legend { display: flex; gap: 16px; font-size: 11.5px; color: #6b7280; padding: 6px 4px 2px; flex-wrap: wrap; }
+  .legend i { display: inline-block; width: 11px; height: 11px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+
+  .diag { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+  .diag h2 {
+    font-size: 13px; padding: 9px 14px; background: #f8fafc;
+    border-bottom: 1px solid #e5e7eb; color: #374151; font-weight: 600;
+  }
+  .diag .body { padding: 12px 14px 14px; font-size: 12.5px; }
+  .diag.bad { border-color: #fecaca; }
+  .diag.bad h2 { background: #fef2f2; color: #b91c1c; border-bottom-color: #fecaca; }
+  .diag.ok { border-color: #bbf7d0; }
+  .diag.ok h2 { background: #f0fdf4; color: #15803d; border-bottom-color: #bbf7d0; }
+
+  .row { margin-bottom: 9px; }
+  .row:last-child { margin-bottom: 0; }
+  .lbl { color: #6b7280; font-size: 11.5px; display: block; margin-bottom: 1px; }
+  .val { color: #111827; }
+  .val.bad { color: #b91c1c; font-weight: 600; }
+  .val.fix { color: #15803d; }
+  .tag {
+    display: inline-block; font-size: 10.5px; padding: 1px 7px; border-radius: 10px;
+    background: #eef2ff; color: #4338ca; margin-left: 6px; vertical-align: 1px;
+  }
+  .tag.r { background: #fee2e2; color: #b91c1c; }
+  .tag.g { background: #dcfce7; color: #15803d; }
+
+  .quote {
+    background: #fffbeb; border-left: 3px solid #f59e0b; padding: 8px 11px;
+    font-size: 12px; color: #78350f; border-radius: 0 4px 4px 0; margin-top: 8px;
+  }
+
+  footer { margin-top: 22px; font-size: 11px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 10px; }
+  footer b { color: #6b7280; }
+
+  text { font-family: "Microsoft YaHei", sans-serif; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>任务结构检查报告 · 《雾隐镇失踪事件》</h1>
+    <div class="sub">
+      检查对象：一条完整支线，16 个节点、3 个状态变量、3 个结局　|　
+      检查项：Q005 路径可达性 + Q013 条件可满足性　|　
+      <b>本任务中预埋了 3 处设计错误，用于演示检查能力</b>
+    </div>
+  </header>
+
+  <div class="summary" id="summary"></div>
+
+  <div class="main">
+    <div class="canvas-box">
+      <div class="legend">
+        <span><i style="background:#dbeafe;border:1px solid #60a5fa"></i>可走到</span>
+        <span><i style="background:#f3f4f6;border:1px dashed #9ca3af"></i>走不到</span>
+        <span><i style="background:#bfdbfe;border:2px solid #1d4ed8"></i>结局节点</span>
+        <span><i style="background:#fee2e2;border:1px solid #dc2626"></i>被阻断的条件</span>
+      </div>
+      <svg id="graph" viewBox="0 0 720 620" width="100%" style="display:block"></svg>
+    </div>
+
+    <div class="panel" id="panel"></div>
+  </div>
+
+  <footer>
+    检查引擎与 <b>q013_minimal.py</b> 同一套逻辑：状态枚举、显式变量域、上限触顶返回「查不完」而不判通过。<br>
+    本报告仅用于演示检查能力的呈现方式；《雾隐镇失踪事件》为原创测试任务，不代表任何真实项目。
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   一、任务数据（策划语言）
+   ============================================================ */
+
+const VARS = {
+  clue:      { name: "线索",       type: "int",  min: 0, max: 4, init: 0 },
+  trust:     { name: "猎人信任",   type: "int",  min: 0, max: 1, init: 0 },
+  met_elder: { name: "见过守林人", type: "bool", init: false }
+};
+
+const NODES = {
+  v0:  { name: "村口",          kind: "start",  x: 30,  y: 34,  desc: "玩家进入雾隐镇" },
+  v1:  { name: "询问里正",      kind: "normal", x: 170, y: 34,  desc: "得知孩子三日未归" },
+  v2:  { name: "问货郎",        kind: "normal", x: 310, y: 34,  desc: "孩子最后往后山去", gain: "线索 +1" },
+  v3:  { name: "问洗衣妇",      kind: "normal", x: 450, y: 34,  desc: "当夜起了大雾", gain: "线索 +1" },
+  v4:  { name: "后山小径",      kind: "normal", x: 450, y: 104, desc: "通往猎人处与矿洞" },
+  v5:  { name: "猎人屋外",      kind: "normal", x: 590, y: 104, desc: "猎人警惕外来人" },
+  v6:  { name: "与猎人交谈",    kind: "normal", x: 590, y: 174, desc: "猎人松口，提到雾里的声音", gain: "猎人信任 +1" },
+  v7:  { name: "猎人屋内",      kind: "normal", x: 590, y: 244, desc: "桌上有一张旧地图" },
+  v8:  { name: "守林人草棚",    kind: "normal", x: 400, y: 290, desc: "守林人知道雾的来历", gain: "见过守林人" },
+  v9:  { name: "废弃矿洞",      kind: "normal", x: 590, y: 314, desc: "孩子的布偶在洞口", gain: "线索 +1" },
+  v10: { name: "拾得布偶",      kind: "normal", x: 590, y: 384, desc: "布偶上绣着孩子的名字" },
+  v11: { name: "返回村口",      kind: "normal", x: 430, y: 400, desc: "回村决定如何处置", gain: "线索 +1" },
+  v12: { name: "当面质问里正",  kind: "normal", x: 260, y: 470, desc: "里正承认隐瞒了旧事" },
+  v13: { name: "结局·寻回",     kind: "ending", x: 430, y: 476, desc: "孩子被带回村子" },
+  v15: { name: "结局·空手而归", kind: "ending", x: 600, y: 476, desc: "线索不足，未能找到" },
+  v14: { name: "结局·雾中之声", kind: "ending", x: 250, y: 552, desc: "隐藏结局：听见雾里的呼唤" }
+};
+
+const EDGES = [
+  { f: "v0",  t: "v1",  label: "接取" },
+  { f: "v1",  t: "v2",  label: "问货郎",   act: [{ v: "clue", op: "+=", n: 1 }] },
+  { f: "v2",  t: "v3",  label: "问洗衣妇", act: [{ v: "clue", op: "+=", n: 1 }] },
+  { f: "v3",  t: "v4",  label: "去后山" },
+  { f: "v4",  t: "v5",  label: "找猎人" },
+  { f: "v5",  t: "v6",  label: "开口",   cond: "clue >= 1", act: [{ v: "trust", op: "+=", n: 1 }] },
+  { f: "v6",  t: "v7",  label: "进屋",   cond: "trust >= 1" },
+  { f: "v7",  t: "v9",  label: "去矿洞" },
+  { f: "v6",  t: "v8",  label: "去草棚", cond: "met_elder == true" },
+  { f: "v8",  t: "v11", label: "听完",   act: [{ v: "met_elder", op: "set", n: 1 }] },
+  { f: "v9",  t: "v10", label: "查看",   act: [{ v: "clue", op: "+=", n: 1 }] },
+  { f: "v10", t: "v11", label: "回村",   act: [{ v: "clue", op: "+=", n: 1 }] },
+  { f: "v11", t: "v12", label: "质问",   cond: "clue >= 2" },
+  { f: "v11", t: "v13", label: "交差",   cond: "clue >= 2" },
+  { f: "v11", t: "v15", label: "放弃",   cond: "clue < 2" },
+  { f: "v12", t: "v14", label: "追问",   cond: "clue >= 3 and met_elder == true and trust >= 2" }
+];
+
+const GOALS = [
+  { id: "v13", name: "结局·寻回（普通结局）" },
+  { id: "v14", name: "结局·雾中之声（隐藏结局）" },
+  { id: "v15", name: "结局·空手而归（失败结局）" }
+];
+
+/* ============================================================
+   二、检查引擎（与 q013_minimal.py 同逻辑）
+   ============================================================ */
+
+function initState() {
+  const s = {};
+  for (const k in VARS) s[k] = VARS[k].init;
+  return s;
+}
+
+function evalCond(expr, st) {
+  if (!expr) return true;
+  // 安全求值：只允许变量名、数字、比较与布尔运算
+  const cleaned = expr
+    .replace(/==/g, "===").replace(/and/g, "&&").replace(/or/g, "||")
+    .replace(/\bnot\b/g, "!");
+  const names = Object.keys(VARS);
+  // eslint-disable-next-line no-new-func
+  const fn = new Function(...names, "return (" + cleaned + ");");
+  return fn(...names.map(n => st[n]));
+}
+
+function applyAct(st, acts) {
+  if (!acts) return st;
+  const next = Object.assign({}, st);
+  for (const a of acts) {
+    const spec = VARS[a.v];
+    if (a.op === "set") next[a.v] = a.n;
+    else if (a.op === "+=") next[a.v] = next[a.v] + a.n;
+    if (typeof next[a.v] === "number") {
+      if (next[a.v] > spec.max || next[a.v] < spec.min) return null; // 越界视为非法转移
+    }
+  }
+  return next;
+}
+
+function key(st) {
+  return Object.keys(st).sort().map(k => k + ":" + st[k]).join("|");
+}
+
+const LIMIT = 50000;
+
+/* 从起点做状态枚举，返回可达状态集合与触顶标记 */
+function explore() {
+  const start = initState();
+  const seen = new Map();
+  const queue = [{ st: start, node: "v0", path: ["v0"], acts: [] }];
+  seen.set("v0@" + key(start), true);
+  let count = 0, overflow = false;
+  const nodeStates = {}; // node -> [state]
+  const edgeUsed = {};
+
+  while (queue.length) {
+    const cur = queue.shift();
+    count++;
+    if (count > LIMIT) { overflow = true; break; }
+    if (!nodeStates[cur.node]) nodeStates[cur.node] = [];
+    nodeStates[cur.node].push(cur.st);
+
+    for (const e of EDGES) {
+      if (e.f !== cur.node) continue;
+      if (!evalCond(e.cond, cur.st)) continue;
+      const ns = applyAct(cur.st, e.act);
+      if (ns === null) continue;
+      const k = e.t + "@" + key(ns);
+      if (seen.has(k)) continue;
+      seen.set(k, true);
+      edgeUsed[e.f + ">" + e.t] = true;
+      queue.push({ st: ns, node: e.t, path: cur.path.concat(e.t), acts: cur.acts.concat(e.act || []) });
+    }
+  }
+  return { nodeStates, edgeUsed, count, overflow };
+}
+
+const RES = explore();
+
+function reachable(id) {
+  return !!(RES.nodeStates[id] && RES.nodeStates[id].length);
+}
+
+/* 对某个目标，找出未满足的条件与变量的可达上限 */
+function diagnose(goalId) {
+  const reached = reachable(goalId);
+  if (reached) return { state: "SAT" };
+
+  // 找出所有指向目标的边，逐条判断为什么走不通
+  const incoming = EDGES.filter(e => e.t === goalId);
+  const details = [];
+
+  for (const e of incoming) {
+    const srcReach = reachable(e.f);
+    if (!srcReach) {
+      details.push({
+        edge: e, why: "src-unreachable",
+        text: `前置节点「${NODES[e.f].name}」本身就不可达，所以这条路整条断掉。`
+      });
+      continue;
+    }
+    // 源可达：检查条件里哪个变量达不到
+    const states = RES.nodeStates[e.f] || [];
+    if (!e.cond) { details.push({ edge: e, why: "ok", text: "条件本身可满足。" }); continue; }
+    const unmet = unmetVar(e.cond, states);
+    details.push({
+      edge: e, why: "cond", unmet,
+      text: unmet.length
+        ? unmet.map(u =>
+            `需要「${VARS[u.v].name} ${u.op} ${u.need}」，但实际最多只能达到 ${u.best}。`
+          ).join(" ")
+        : "条件可满足。"
+    });
+  }
+  return { state: "UNSAT", incoming, details };
+}
+
+/* 在源节点的所有可达状态里，找某个条件的最大满足度 */
+function unmetVar(expr, states) {
+  const out = [];
+  // 支持形如 a >= n / a == true 的简单原子条件
+  const atoms = expr.split(/\s+and\s+/);
+  for (const atom of atoms) {
+    const m = atom.match(/(\w+)\s*(>=|<=|>|<|==)\s*(\d+|true|false)/);
+    if (!m) continue;
+    const [, v, op, target] = m;
+    if (!VARS[v]) continue;
+    const spec = VARS[v];
+    if (spec.type === "bool") {
+      const need = target === "true" || target === "1";
+      const has = states.some(s => s[v] === need);
+      if (!has) out.push({ v, op, need: need ? "是" : "否", best: need ? "否" : "是" });
+    } else {
+      const need = Number(target);
+      const vals = states.map(s => s[v]);
+      const best = Math.max(...vals);
+      const least = Math.min(...vals);
+      const ok = op === ">=" ? best >= need
+               : op === ">"  ? best > need
+               : op === "<=" ? least <= need
+               : op === "<"  ? least < need
+               : op === "==" ? vals.includes(need) : true;
+      if (!ok) out.push({ v, op, need, best, least });
+    }
+  }
+  return out;
+}
+
+/* ============================================================
+   三、画图
+   ============================================================ */
+
+const svg = document.getElementById("graph");
+const NW = 116, NH = 42;
+
+function shorten(a, b) {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const len = Math.hypot(dx, dy) || 1;
+  const ox = dx / len, oy = dy / len;
+  // 从矩形边缘出发
+  const sx = a.x + NW / 2 + ox * 6, sy = a.y + NH / 2 + oy * 6;
+  const ex = b.x + NW / 2 - ox * 8, ey = b.y + NH / 2 - oy * 8;
+  return { sx, sy, ex, ey };
+}
+
+let svgHTML = "";
+
+// 边
+for (const e of EDGES) {
+  const A = NODES[e.f], B = NODES[e.t];
+  if (!A || !B) continue;
+  const p = shorten(A, B);
+  const used = RES.edgeUsed[e.f + ">" + e.t];
+  const color = used ? "#94a3b8" : "#fca5a5";
+  const dash = used ? "" : 'stroke-dasharray="5 4"';
+  const mx = (p.sx + p.ex) / 2, my = (p.sy + p.ey) / 2;
+  svgHTML += `<path d="M${p.sx} ${p.sy} L${p.ex} ${p.ey}" stroke="${color}" stroke-width="${used ? 1.4 : 1.8}" ${dash} fill="none" marker-end="url(#${used ? 'ar' : 'arR'})"/>`;
+  if (e.cond) {
+    const short = e.cond.replace(/met_elder == true/g, "见过守林人").replace(/clue/g, "线索").replace(/trust/g, "信任").replace(/and/g, "且").replace(/>=/g, "≥");
+    svgHTML += `<text x="${mx + 4}" y="${my - 3}" font-size="9" fill="${used ? '#94a3b8' : '#dc2626'}">${short}</text>`;
+  } else if (e.label) {
+    svgHTML += `<text x="${mx + 4}" y="${my - 3}" font-size="9" fill="#9ca3af">${e.label}</text>`;
+  }
+}
+
+// 节点
+for (const id in NODES) {
+  const n = NODES[id];
+  const ok = reachable(id);
+  const isEnd = n.kind === "ending";
+  const fill = ok ? (isEnd ? "#bfdbfe" : "#dbeafe") : "#f3f4f6";
+  const stroke = ok ? (isEnd ? "#1d4ed8" : "#60a5fa") : "#9ca3af";
+  const dash = ok ? "" : 'stroke-dasharray="4 3"';
+  const tc = ok ? "#1e3a8a" : "#9ca3af";
+  svgHTML += `<rect x="${n.x}" y="${n.y}" width="${NW}" height="${NH}" rx="6" fill="${fill}" stroke="${stroke}" stroke-width="${isEnd ? 2 : 1.2}" ${dash}/>`;
+  svgHTML += `<text x="${n.x + NW / 2}" y="${n.y + NH / 2 + 4}" text-anchor="middle" font-size="11.5" fill="${tc}" font-weight="${isEnd ? 700 : 500}">${n.name}</text>`;
+  if (!ok) {
+    svgHTML += `<text x="${n.x + NW / 2}" y="${n.y + NH + 12}" text-anchor="middle" font-size="9" fill="#dc2626">走不到</text>`;
+  }
+}
+
+svg.innerHTML = `<defs>
+  <marker id="ar" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto">
+    <path d="M0,0 L6,3 L0,6 z" fill="#94a3b8"/></marker>
+  <marker id="arR" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto">
+    <path d="M0,0 L6,3 L0,6 z" fill="#fca5a5"/></marker>
+</defs>` + svgHTML;
+
+/* ============================================================
+   四、诊断面板
+   ============================================================ */
+
+const DIAG = {};
+for (const g of GOALS) DIAG[g.id] = diagnose(g.id);
+
+const totalNodes = Object.keys(NODES).length;
+const reachNodes = Object.keys(NODES).filter(reachable).length;
+const unreach = Object.keys(NODES).filter(id => !reachable(id));
+
+/* 顶部三个数 */
+document.getElementById("summary").innerHTML = `
+  <div class="card ${unreach.length ? 'fail' : 'pass'}">
+    <div class="k">走不到的节点</div>
+    <div class="v">${unreach.length} / ${totalNodes}</div>
+    <div class="n">${unreach.map(id => NODES[id].name).join("、") || "全部可达"}</div>
+  </div>
+  <div class="card fail">
+    <div class="k">无法触发的结局</div>
+    <div class="v">${GOALS.filter(g => DIAG[g.id].state !== "SAT").length} / ${GOALS.length}</div>
+    <div class="n">${GOALS.filter(g => DIAG[g.id].state !== "SAT").map(g => g.name).join("、") || "全部可触发"}</div>
+  </div>
+  <div class="card warn">
+    <div class="k">搜索状态数</div>
+    <div class="v">${RES.count}</div>
+    <div class="n">上限 ${LIMIT.toLocaleString()}，未触顶，结论为确定结果</div>
+  </div>
+`;
+
+/* 每个结局一块 */
+let panelHTML = "";
+for (const g of GOALS) {
+  const d = DIAG[g.id];
+  if (d.state === "SAT") {
+    panelHTML += `<div class="diag ok">
+      <h2>${g.name}<span class="tag g">可触发</span></h2>
+      <div class="body">
+        <div class="row"><span class="lbl">判定</span><span class="val">存在一条合法路径可以走到这个结局。</span></div>
+        <div class="row"><span class="lbl">说明</span><span class="val">沿途所有条件都能被满足，玩家正常游玩即可触发。</span></div>
+      </div></div>`;
+    continue;
+  }
+
+  // 通用诊断：对每条入边，说明为什么走不通
+  let rows = "";
+  const fixes = [];
+  for (const det of d.details) {
+    const src = NODES[det.edge.f];
+    if (det.why === "src-unreachable") {
+      rows += `<div class="row"><span class="lbl">这条路整条断掉</span>
+        <span class="val bad">前置节点「${src.name}」本身就走不到，所以通向这个结局的路径永远不成立。</span></div>`;
+      continue;
+    }
+    if (!det.unmet || !det.unmet.length) continue;
+
+    for (const u of det.unmet) {
+      const spec = VARS[u.v];
+      let expr;
+      if (spec.type === "bool") {
+        expr = `要求「${spec.name}」为「${u.need}」，但实际只能是「${u.best}」`;
+      } else {
+        const sym = { ">=": "≥", ">": "&gt;", "<=": "≤", "<": "&lt;", "==": "=" }[u.op] || u.op;
+        expr = `要求「${spec.name} ${sym} ${u.need}」，但实际${u.op === "<" || u.op === "<=" ? "最少也有 " + u.least : "最多只能到 " + u.best}`;
+      }
+      rows += `<div class="row"><span class="lbl">条件不满足</span>
+        <span class="val bad">${expr}。</span></div>`;
+
+      // 根因追溯：这个变量是谁设的，那个节点走不走得到
+      const setters = EDGES.filter(e => (e.act || []).some(a => a.v === u.v));
+      const dead = setters.find(e => !reachable(e.f));
+      if (dead) {
+        rows += `<div class="row"><span class="lbl">根因</span>
+          <span class="val">「${spec.name}」只有在走过「${NODES[dead.f].name}」之后才会改变，
+          而那个节点自己就进不去——它的进门条件正好要求已经「${spec.name}」。
+          <b>这是循环依赖：要进去才能获得，要获得才能进去。</b></span></div>`;
+        fixes.push(`解除「${NODES[dead.f].name}」的循环依赖：把进门条件改成「线索 ≥ 2」，或直接去掉这个前置。`);
+      } else if (u.op === "<" || u.op === "<=") {
+        rows += `<div class="row"><span class="lbl">根因</span>
+          <span class="val">这个结局要求${u.op === "<" ? "少于" : "不超过"} ${u.need}，
+          但能走到「${src.name}」的玩家，${spec.name}最低也已经是 ${u.least}。
+          <b>条件与上游互斥，这条边永远不会被选中。</b></span></div>`;
+        fixes.push(`「${g.name}」若要保留，得从更早的节点另开一条分支（比如「后山小径」允许提前放弃），不能挂在「${src.name}」后面。`);
+      } else if (spec.type === "int" && setters.length) {
+        rows += `<div class="row"><span class="lbl">根因</span>
+          <span class="val">全任务只有 ${setters.length} 次增加「${spec.name}」的机会，
+          变量上限设成了 ${spec.max}，而条件要求 ${u.need}。</span></div>`;
+        fixes.push(`把「${spec.name}」上限提到 ${u.need}，或在「${NODES.v7.name}」补一次${spec.name} +1 的机会。`);
+      }
+    }
+  }
+  const fixText = fixes.length
+    ? fixes.map((f, i) => `${i + 1}. ${f}`).join("　")
+    : "条件本身可满足，问题出在前置节点不可达。";
+  rows += `<div class="row"><span class="lbl">建议</span>
+    <span class="val fix">${fixText}</span></div>`;
+
+  panelHTML += `<div class="diag bad">
+    <h2>${g.name}<span class="tag r">触发不了</span></h2>
+    <div class="body">${rows}</div></div>`;
+}
+
+/* 不可达节点清单 */
+if (unreach.length) {
+  panelHTML += `<div class="diag bad">
+    <h2>其余走不到的节点<span class="tag r">${unreach.length} 个</span></h2>
+    <div class="body">
+      ${unreach.map(id => `<div class="row"><span class="lbl">${NODES[id].name}</span>
+        <span class="val">${NODES[id].desc}</span></div>`).join("")}
+      <div class="quote">这些节点不是「还没做」，是「按现在的条件永远走不到」。玩家不会报错，只会觉得这条线短了点。</div>
+    </div></div>`;
+}
+
+document.getElementById("panel").innerHTML = panelHTML;
+</script>
+</body>
+</html>

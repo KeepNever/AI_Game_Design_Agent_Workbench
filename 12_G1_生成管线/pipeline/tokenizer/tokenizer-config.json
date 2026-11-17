@@ -1,0 +1,27 @@
+{
+  "comment": "GLM Tokenizer 辅助进程绑定配置（曦 2026-11-16 指令：绑定模型仓库 + 固定 revision + 锁定依赖版本）。revision 来自 hf-mirror.com/api 实查（2026-11-16）。pythonEnvs 指向各模型独立 venv 的 python.exe（创建后回填）。",
+  "source": "hf-mirror.com/api/models/zai-org/*（2026-11-16 实查；直连 huggingface.co 被网络策略阻断）",
+  "models": {
+    "glm-4.7": {
+      "repo": "zai-org/GLM-4.7",
+      "revision": "602d01efcdd332c5238ca4bcede555defbe83eb7",
+      "loader": "AutoTokenizer",
+      "configFacts": { "architectures": "Glm4MoeForCausalLM", "transformers_version": "4.54.0", "model_type": "glm4_moe", "files": ["tokenizer.json", "tokenizer_config.json"] }
+    },
+    "glm-5.3-flash": {
+      "repo": "zai-org/GLM-5.3-Flash",
+      "revision": "46a050bec13002ad29ee795c16e61cf4fa3c4a9c",
+      "loader": "AutoProcessor",
+      "fallbackLoader": "AutoTokenizer",
+      "configFacts": { "architectures": "Glm5NextForConditionalGeneration", "transformers_version": "5.16.0", "pipeline_tag": "image-text-to-text", "files": ["tokenizer.json", "tokenizer_config.json", "processor_config.json"] }
+    }
+  },
+  "pythonEnvs": {
+    "glm-4.7": "pipeline/tokenizer/venv-53/Scripts/python.exe",
+    "glm-5.3-flash": "pipeline/tokenizer/venv-53/Scripts/python.exe"
+  },
+  "requirements": {
+    "glm-4.7": "transformers==4.54.0（模型 config 所写版本，精确锁定）",
+    "glm-5.3-flash": "transformers==5.16.0（模型 config 所写版本，精确锁定）"
+  }
+}

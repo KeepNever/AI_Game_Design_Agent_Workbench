@@ -1,0 +1,32 @@
+<!doctype html><meta charset="utf-8"><body><pre id="out">BEGIN</pre>
+<script src="../engine/grid_engine.js"></script>
+<script src="../engine/dsl_runtime.js"></script>
+<script>
+const out = [];
+function say(m){ out.push(m); document.getElementById('out').textContent = out.join('\n'); }
+const DIRS = {U:[0,-1],D:[0,1],L:[-1,0],R:[1,0]};
+function run(name, lvFile, mech, path){
+  try {
+    say(name + ' 开始');
+    const rules = DSLRules(mech, null);
+    // 手动加载 levels（levels.js 里是 const LEVELS，直接 eval 不可行——改为 fetch? 用同步 XHR）
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', lvFile, false); xhr.send();
+    const m = xhr.responseText.match(/const LEVELS = (\[.*\]);/s);
+    const levels = JSON.parse(m[1]);
+    const st = rules.init(levels[0], 0);
+    let s = st, win = false, steps = 0;
+    for (const d of path) {
+      const r = rules.tryMove(s, d, levels[0]);
+      s = r.state;
+      if (r.moved) steps++;
+      if (rules.isWin(s, levels[0])) { win = true; break; }
+    }
+    say(name + ' 步数=' + steps + ' isWin=' + win + ' status=' + rules.status(s, levels[0]));
+  } catch (e) { say(name + ' ★异常: ' + e.message); }
+}
+</script>
+<script src="gameA_推箱/levels.js"></script>
+<script src="gameA_推箱/mechanic.js"></script>
+<script>run('A', 'gameA_推箱/levels.js', MECHANIC, 'DDULLDDRUDDRRUU');</script>
+<script>say('END');</script>

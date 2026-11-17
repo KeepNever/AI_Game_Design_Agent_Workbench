@@ -1,0 +1,22 @@
+<!doctype html><meta charset="utf-8"><pre id="out">PENDING</pre>
+<script src="../engine/grid_engine.js"></script>
+<script src="../engine/dsl_runtime.js"></script>
+<script src="levels.js"></script>
+<script src="mechanic.js"></script>
+<script>
+const out = [];
+function say(m){ out.push(m); document.getElementById('out').textContent = out.join('\n'); }
+try {
+  const rules = DSLRules(MECHANIC, LEVELS);
+  let s = rules.init(LEVELS[1], 1);
+  let win = false, steps = 0, crumbled = 0;
+  for (const d of 'RRRRRRDDDD') {
+    const r = rules.tryMove(s, d, LEVELS[1]);
+    s = r.state;
+    if (r.moved) steps++;
+    crumbled = Math.max(crumbled, Object.values(s.cellProps).filter(p => p.hole).length);
+    if (rules.isWin(s, LEVELS[1])) { win = true; break; }
+  }
+  say('C 步数=' + steps + ' isWin=' + win + ' 已碎=' + crumbled + ' ｜ ' + rules.status(s, LEVELS[1]) + ' ｜ ERR=' + (window.__dslErr || '无'));
+} catch (e) { say('★异常: ' + e.message + ' @ ' + (e.stack||'').split('\n').slice(1,5).join(' | ')); }
+</script>

@@ -1,0 +1,9 @@
+{
+  "brief_id": "glm5-demo",
+  "model": "glm-5.3-flash",
+  "prompt_version": "e2e-demo",
+  "archive_refs": [
+    "D:\\workbuddy\\AI_Game_Design_Agent_Workbench\\12_G1_生成管线\\pipeline\\e2e-archives\\glm5-demo\\2026-11-16T13-37-17-095Z-001.json"
+  ],
+  "packaged_at": "2026-11-16T13:37:17.121Z"
+}

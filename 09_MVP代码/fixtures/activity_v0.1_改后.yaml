@@ -1,0 +1,91 @@
+# 放置类 / 活动奖励配置 v0.1
+# 与 05_任务设计与产物/放置类活动配置样例/activity_config_v0.1.json 同源，改为 YAML 便于手改。
+# 数据分层写在 _meta.source_legend 里：口述 / 模拟 / 推断，报告必须按层展示，不能合成一个总数。
+
+_meta:
+  pack_id: PACK_PLACEMENT_ACTIVITY
+  name: 放置类 / 活动奖励配置
+  version: "0.1"
+  status: v0.1 冻结（2026-11-10）——不扩字段、不扩能力
+
+activity:
+  id: ACT-1109-01
+  name: 霜月祭
+  type: 固定循环活动
+  server_open_days: 45
+  open_day_min: 30
+  duration_days: 7
+  lead_time_days: 30
+  server_population: 600
+
+tiers:
+  - id: T_HIGH
+    name: 高档
+    ratio: 100
+    count: 1
+    count_mode: fixed
+  - id: T_MID
+    name: 中档
+    ratio: 10
+    count: 5
+    declared_count: 5
+    count_mode: fixed
+    quota_pct_min: 0.003
+    quota_pct_max: 0.006
+  - id: T_LOW
+    name: 低档
+    ratio: 1
+    count: 120
+    count_mode: ratio_of_population
+    population_ratio: 0.1
+
+downstream:
+  - id: OBJ_RANK
+    name: 排行榜奖励展示
+    type: UI / 榜单
+    owner: 系统策划
+    refs:
+      - tiers.T_HIGH.count
+      - tiers.T_MID.count
+  - id: OBJ_ANNOUNCE
+    name: 活动公告文案
+    type: 文案
+    owner: 运营
+    refs:
+      - tiers.T_MID.ratio
+      - tiers.T_LOW.ratio
+      - tiers.T_MID.count
+  - id: OBJ_SHOP
+    name: 商店兑换比例
+    type: 数值 / 兑换
+    owner: 数值策划
+    refs:
+      - tiers.T_MID.ratio
+      - tiers.T_LOW.ratio
+  - id: OBJ_MAIL
+    name: 发奖邮件模板
+    type: 文案 / 发放
+    owner: 运营
+    refs:
+      - tiers.T_LOW.count
+      - tiers.T_MID.count
+  - id: OBJ_DROP
+    name: 掉落实体配置
+    type: 数值 / 掉落
+    owner: 数值策划
+    refs:
+      - tiers.T_LOW.count
+  - id: OBJ_FAQ
+    name: 客服 FAQ / 口径说明
+    type: 文档
+    owner: 客服
+    refs:
+      - tiers.T_MID.count
+
+derived:
+  - path: tiers.T_LOW.count
+    formula: round(activity.server_population * tiers.T_LOW.population_ratio)
+    refs:
+      - activity.server_population
+      - tiers.T_LOW.population_ratio
+    reason: 低档份数按人数比例推导，人数一变就要重算
