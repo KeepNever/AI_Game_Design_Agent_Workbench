@@ -126,4 +126,29 @@ t('W7 重复生成同 Brief：各得独立产品目录，互不覆盖', async ()
   return r1.productId + ' / ' + r2.productId;
 });
 
+t('W8 Inspector 数据源：档案调用记录 / GT-1 逐关重放 / 产品元数据 / 参数回显', async () => {
+  const brief = listBriefs().find(b => b.id === 'tune-e');
+  const r = await generateViaWorkbench({ briefText: brief.text, maxAttempts: 1, model: 'glm-4.7' });
+  assert.strictEqual(r.ok, true);
+  assert.strictEqual(r.model, 'glm-4.7', '模型参数回显');
+  assert.strictEqual(r.maxAttempts, 1, '重试次数参数回显');
+  assert.strictEqual(r.inspect.calls.length, 1, '调用档案 1 份');
+  const c = r.inspect.calls[0];
+  assert.ok(c.usage && c.usage.prompt_tokens > 0, '档案含 usage');
+  assert.ok(c.estimate_tokens > 0, '档案含 estimate_tokens');
+  assert.strictEqual(r.inspect.solvability[0].verdict, 'PASS', 'GT-1 重放 PASS');
+  assert.ok(r.inspect.solvability[0].steps > 0, '含最少步数');
+  assert.strictEqual(r.inspect.product.integrity.roundTripOk, true, '产品元数据含完整性');
+  assert.strictEqual(r.inspect.budget.cap, 22);
+  return 'glm-4.7 · 1 回合 · ' + r.inspect.solvability[0].steps + ' 步 · roundtrip ✓';
+});
+
+t('W9 参数边界：maxAttempts 越界钳制（9→5）+ 非法模型回退默认', async () => {
+  const brief = listBriefs().find(b => b.id === 'tune-a');
+  const r = await generateViaWorkbench({ briefText: brief.text, maxAttempts: 9, model: 'fake-model' });
+  assert.strictEqual(r.maxAttempts, 5, '9 应钳制为 5');
+  assert.strictEqual(r.model, 'glm-5.3-flash', '非法模型应回退默认');
+  return '钳制与白名单生效';
+});
+
 runAll();

@@ -89,6 +89,39 @@ const BASE = 'http://127.0.0.1:8792';
     return '拦截事件「' + failEv.trim().slice(0, 60) + '…」+ 2 回合成功';
   });
 
+  await t('B7 节点属性 Inspector：点击「模型调用」显示真实档案（usage/Token 来源）', async () => {
+    await page.click('#stages li.n2');
+    await page.waitForTimeout(100);
+    const text = await page.textContent('#inspector');
+    if (!text.includes('usage') || !text.includes('Token 来源')) throw new Error('Inspector 缺真实档案数据: ' + text.slice(0, 120));
+    return 'Inspector 真数据渲染 ✓';
+  });
+
+  await t('B8 画布内试玩：iframe 嵌入预览页，游戏帧可达，可收起', async () => {
+    await page.click('#btn-embed');
+    let playFrame = null;
+    for (let i = 0; i < 30; i++) {
+      playFrame = page.frames().find(fr => fr.url().includes('/play/'));
+      if (playFrame) break;
+      await page.waitForTimeout(150);
+    }
+    if (!playFrame) throw new Error('内嵌游戏帧未出现');
+    await page.click('#btn-exit-play');
+    const back = await page.$('#btn-embed');
+    if (!back) throw new Error('收起后未还原结果面板');
+    return '嵌 iframe → 游戏帧可达 → 收起还原 ✓';
+  });
+
+  await t('B9 导出产物：/api/product 端点返回完整产品包', async () => {
+    const d = await page.evaluate(async () => {
+      const r = await fetch('/api/product/e2e-glm5-demo');
+      return { status: r.status, body: await r.json() };
+    });
+    if (d.status !== 200 || !d.body.ok) throw new Error('导出端点失败: ' + d.status);
+    if (!d.body.product.mechanic || !d.body.meta.brief_id) throw new Error('产品包不完整');
+    return 'product + meta 完整（' + d.body.id + '）';
+  });
+
   await t('B5 预算双台账展示：模拟台账已核销 > 0；真实台账保持 0（隔离）', async () => {
     await page.reload();
     await page.waitForSelector('.budget-panel.sim');

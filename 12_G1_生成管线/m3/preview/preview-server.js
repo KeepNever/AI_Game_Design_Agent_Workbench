@@ -168,9 +168,29 @@ const server = http.createServer((req, res) => {
     return send(res, 200, JSON.stringify(listBudget()), 'application/json; charset=utf-8');
   }
   if (url === '/api/generate' && req.method === 'POST') {
-    return readJsonBody(req).then(body => generateViaWorkbench({ briefText: String(body.brief || '') }))
+    return readJsonBody(req)
+      .then(body => generateViaWorkbench({
+        briefText: String(body.brief || ''),
+        maxAttempts: Number(body.maxAttempts) || 3,
+        model: String(body.model || 'glm-5.3-flash')
+      }))
       .then(r => send(res, 200, JSON.stringify(r), 'application/json; charset=utf-8'))
       .catch(e => send(res, 400, JSON.stringify({ ok: false, reason: 'bad_request：' + e.message }), 'application/json; charset=utf-8'));
+  }
+  // 产品包导出（曦批次一）：product.json + meta.json + 档案引用计数
+  const pexp = url.match(/^\/api\/product\/([^/]+)$/);
+  if (pexp) {
+    const key = decodeURIComponent(pexp[1]);
+    if (!games[key]) return send(res, 404, JSON.stringify({ ok: false, reason: 'unknown product' }), 'application/json; charset=utf-8');
+    const spec = PRODUCT_DIRS.find(s => key.startsWith(s.prefix));
+    const dir = spec ? path.join(spec.dir, key.slice(spec.prefix.length)) : null;
+    try {
+      const product = JSON.parse(fs.readFileSync(path.join(dir, 'product.json'), 'utf8'));
+      const meta = JSON.parse(fs.readFileSync(path.join(dir, 'meta.json'), 'utf8'));
+      return send(res, 200, JSON.stringify({ ok: true, id: key, product, meta }), 'application/json; charset=utf-8');
+    } catch (e) {
+      return send(res, 404, JSON.stringify({ ok: false, reason: e.message.slice(0, 80) }), 'application/json; charset=utf-8');
+    }
   }
 
   if (/^\/preview\/[^/]+$/.test(url) && known) {

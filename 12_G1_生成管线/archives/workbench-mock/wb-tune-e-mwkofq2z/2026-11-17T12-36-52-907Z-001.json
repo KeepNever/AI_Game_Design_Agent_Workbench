@@ -1,0 +1,126 @@
+{
+  "archived_at": "2026-11-17T12:36:52.907Z",
+  "brief_id": "wb-tune-e-mwkofq2z",
+  "brief": "设计一个按序踩灯机制的网格解谜游戏（三盏灯按序点亮后出口开启）",
+  "model": "glm-5.3-flash",
+  "prompt_version": "g1-prompt/0.1.0",
+  "estimate_tokens": 3560,
+  "input_tokens_source": "estimator",
+  "request": {
+    "messages": [
+      {
+        "role": "system",
+        "content": "你是「网格解谜」品类的游戏设计数据生成器。\n你的唯一任务：根据用户 Brief，产出一个结构化的游戏设计数据 JSON 信封。\n\n【输出格式（最高优先级）】\n只输出一个 JSON 信封，以 { 开头、以 } 结束。\n禁止输出：markdown 代码围栏、解释文字、注释、JSON 之外的任何内容。\n你的输出将被 JSON.parse 严格解析并做结构校验，任何格式偏差都会导致拒绝。\n\n【JSON 信封结构骨架（仅结构示意，占位符需替换为真实设计）】\n{\n \"dsl_version\": \"grid-puzzle/0.1\",\n \"mechanic\": {\n  \"dsl\": \"grid-puzzle/0.1\",\n  \"title\": \"（游戏名）\",\n  \"win\": \"（胜利条件表达式）\",\n  \"status\": \"（HUD 状态模板，形如 文本{表达式}文本）\",\n  \"vars\": \"（全局状态变量与初值，可选）\",\n  \"tiles\": \"（地形字符与样式声明，可选）\",\n  \"entities\": \"（实体类型声明，可选）\",\n  \"enter\": \"（进入格规则数组，可选）\",\n  \"deny\": \"（拦截规则数组，可选）\",\n  \"turn\": \"（回合规则数组，可选）\",\n  \"overlays\": \"（属性覆盖层声明，可选）\",\n  \"playerArt\": {\n   \"eyes\": false\n  }\n },\n \"levels\": [\n  {\n   \"name\": \"（关卡名）\",\n   \"map\": [\n    \"（地图行字符串数组，矩形）\"\n   ],\n   \"player\": {\n    \"x\": 0,\n    \"y\": 0\n   },\n   \"dynamic\": [],\n   \"vars\": {},\n   \"cell_props\": {}\n  }\n ]\n}\n\n【硬性约束】\n- dsl_version 与 mechanic.dsl 必须均为 \"grid-puzzle/0.1\"\n- mechanic 必填四字段：dsl / title / win / status\n- levels 至少 1 关；map 必须为矩形（所有行等长）；行数×行长 ≤ 4096\n- player 坐标必须在地图内且不落在 \"#\" 上；地图字符仅可用：声明过的 tiles 键、#（墙）、.（地板）、保留标记 p\n- 表达式长度 ≤ 400 字符；单条规则 effects 数量 ≤ 64\n- 设计必须保证每一关从 player 初始位置可到达胜利条件（可解性）\n- 创新约束：用下方原语词汇组合出新玩法；不得要求引擎具备原语清单之外的能力\n\n【表达式子语言（win / when / status 中可用）】\n- 运算符：+ - * / < > <= >= == != 逻辑与 逻辑或 逻辑非，及括号（无 % 取模）\n- 字面量：数字、'单引号字符串'、true / false\n- 内建函数（仅此 12 个）：\n  tile(x,y) 地图字符；px() py() 玩家坐标；tx() ty() 焦点格坐标；tchar() 焦点格字符；\n  prop(x,y,k) 格属性；v(k) 全局变量；count_tile(c) 全图字符计数；count_entity(t) 实体计数；\n  count_on(t,c) 在指定字符格上的实体计数；count_prop(k,min) 属性达到 min 的格数\n- 表达式求值上下文：win 的焦点格 = 玩家格；deny 的焦点格 = 目标格；enter 的焦点格 = 进入格；turn 逐格求值\n\n【效果词汇（enter / turn / pickup 的 effects 数组元素，仅此 9 种 op）】\n  {\"op\":\"var.add\",\"name\":变量名,\"value\":数字} / {\"op\":\"var.sub\",...同形}\n  {\"op\":\"prop.set\",\"prop\":属性名,\"value\":任意} / {\"op\":\"prop.add\",...} / {\"op\":\"prop.sub\",...}（作用焦点格）\n  {\"op\":\"pit\"}（焦点格标记为不可通行）\n  {\"op\":\"fx\",\"kind\":\"sparkle|dust|confetti|debris|flash\"}\n  {\"op\":\"log\",\"text\":\"模板文本，可含{表达式}\"}\n  {\"op\":\"shake\"}\n\n【规则对象形状】\n  enter / turn 元素：{\"when\":表达式,\"effects\":[效果...]}；turn 元素可加 \"forEachCell\":true（逐格求值）\n  deny 元素：{\"when\":表达式,\"message\":\"拦截提示模板\"}（deny 无 effects，命中即拦截移动）\n\n【tiles 声明（可选）】\n  {\"字符\":{\"style\":\"target|door|exit|stone\",\"glyph\":\"单字符(仅exit)\",\"solid\":布尔}}\n  未声明样式的功能字符仍可在地图中使用（视觉走缺省地板），但须被规则表达式引用\n\n【entities 声明（可选）】\n  {\"类型名\":{\"style\":\"crate|key\",\"pushable\":布尔,\"solid\":布尔,\"pickup\":[效果数组]}}\n  pickup 实体进入其格时执行 effects 并移除；dynamic 数组元素：{\"type\":类型名,\"x\":坐标,\"y\":坐标}\n\n【overlays 声明（可选）】\n  {\"属性名\":{\"kind\":\"fracture|pit\"}}——把格子属性映射为视觉覆盖层\n\n【设计目标】\n  根据 Brief 创造一个机制清晰、规则自洽、每一关可解的网格解谜游戏；\n  机制之间避免相互冲突；胜利条件必须能被表达式表达。"
+      },
+      {
+        "role": "user",
+        "content": "【用户 Brief】\n设计一个按序踩灯机制的网格解谜游戏（三盏灯按序点亮后出口开启）\n\n【要求】按系统提示的 JSON 信封结构，输出这个游戏的设计数据。只输出 JSON。"
+      }
+    ],
+    "temperature": 0.7,
+    "max_tokens": 2000
+  },
+  "latency_ms": 0,
+  "http_status": 200,
+  "raw_output": "{\"choices\":[{\"message\":{\"content\":\"```json\\n{\\n  \\\"dsl_version\\\": \\\"grid-puzzle/0.1\\\",\\n  \\\"mechanic\\\": {\\n    \\\"dsl\\\": \\\"grid-puzzle/0.1\\\",\\n    \\\"title\\\": \\\"按序踩灯\\\",\\n    \\\"win\\\": \\\"tchar()=='E' && v('step')==3\\\",\\n    \\\"status\\\": \\\"进度 {v('step')}/3 ｜ {tchar()}\\\",\\n    \\\"vars\\\": { \\\"step\\\": 0 },\\n    \\\"enter\\\": [\\n      { \\\"when\\\": \\\"tchar()=='a' && v('step')==0\\\", \\\"effects\\\": [ { \\\"op\\\": \\\"var.add\\\", \\\"name\\\": \\\"step\\\", \\\"value\\\": 1 }, { \\\"op\\\": \\\"fx\\\", \\\"kind\\\": \\\"sparkle\\\" }, { \\\"op\\\": \\\"log\\\", \\\"text\\\": \\\"第 1 盏灯亮了（{v('step')}/3）\\\" } ] },\\n      { \\\"when\\\": \\\"tchar()=='b' && v('step')==1\\\", \\\"effects\\\": [ { \\\"op\\\": \\\"var.add\\\", \\\"name\\\": \\\"step\\\", \\\"value\\\": 1 }, { \\\"op\\\": \\\"fx\\\", \\\"kind\\\": \\\"sparkle\\\" }, { \\\"op\\\": \\\"log\\\", \\\"text\\\": \\\"第 2 盏灯亮了（{v('step')}/3）\\\" } ] },\\n      { \\\"when\\\": \\\"tchar()=='c' && v('step')==2\\\", \\\"effects\\\": [ { \\\"op\\\": \\\"var.add\\\", \\\"name\\\": \\\"step\\\", \\\"value\\\": 1 }, { \\\"op\\\": \\\"fx\\\", \\\"kind\\\": \\\"sparkle\\\" }, { \\\"op\\\": \\\"log\\\", \\\"text\\\": \\\"第 3 盏灯亮了（{v('step')}/3）——出口开启！\\\" } ] }\\n    ],\\n    \\\"tiles\\\": { \\\"E\\\": { \\\"style\\\": \\\"exit\\\", \\\"glyph\\\": \\\"出\\\" } }\\n  },\\n  \\\"levels\\\": [\\n    { \\\"name\\\": \\\"按序点亮\\\", \\\"map\\\": [\\\"#######\\\", \\\"#....a#\\\", \\\"#.b...#\\\", \\\"#..c..#\\\", \\\"#....E#\\\", \\\"#######\\\"], \\\"player\\\": { \\\"x\\\": 1, \\\"y\\\": 1 }, \\\"dynamic\\\": [] }\\n  ]\\n}\\n```\"}}],\"usage\":{\"prompt_tokens\":3500,\"completion_tokens\":1200,\"total_tokens\":4700}}",
+  "usage": {
+    "prompt_tokens": 3500,
+    "completion_tokens": 1200,
+    "total_tokens": 4700
+  },
+  "sent": true,
+  "outcome": "parsed",
+  "error": null,
+  "candidate": {
+    "dsl_version": "grid-puzzle/0.1",
+    "mechanic": {
+      "dsl": "grid-puzzle/0.1",
+      "title": "按序踩灯",
+      "win": "tchar()=='E' && v('step')==3",
+      "status": "进度 {v('step')}/3 ｜ {tchar()}",
+      "vars": {
+        "step": 0
+      },
+      "enter": [
+        {
+          "when": "tchar()=='a' && v('step')==0",
+          "effects": [
+            {
+              "op": "var.add",
+              "name": "step",
+              "value": 1
+            },
+            {
+              "op": "fx",
+              "kind": "sparkle"
+            },
+            {
+              "op": "log",
+              "text": "第 1 盏灯亮了（{v('step')}/3）"
+            }
+          ]
+        },
+        {
+          "when": "tchar()=='b' && v('step')==1",
+          "effects": [
+            {
+              "op": "var.add",
+              "name": "step",
+              "value": 1
+            },
+            {
+              "op": "fx",
+              "kind": "sparkle"
+            },
+            {
+              "op": "log",
+              "text": "第 2 盏灯亮了（{v('step')}/3）"
+            }
+          ]
+        },
+        {
+          "when": "tchar()=='c' && v('step')==2",
+          "effects": [
+            {
+              "op": "var.add",
+              "name": "step",
+              "value": 1
+            },
+            {
+              "op": "fx",
+              "kind": "sparkle"
+            },
+            {
+              "op": "log",
+              "text": "第 3 盏灯亮了（{v('step')}/3）——出口开启！"
+            }
+          ]
+        }
+      ],
+      "tiles": {
+        "E": {
+          "style": "exit",
+          "glyph": "出"
+        }
+      }
+    },
+    "levels": [
+      {
+        "name": "按序点亮",
+        "map": [
+          "#######",
+          "#....a#",
+          "#.b...#",
+          "#..c..#",
+          "#....E#",
+          "#######"
+        ],
+        "player": {
+          "x": 1,
+          "y": 1
+        },
+        "dynamic": []
+      }
+    ]
+  }
+}

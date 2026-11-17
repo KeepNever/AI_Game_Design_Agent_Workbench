@@ -14,7 +14,10 @@ const path = require('path');
 const { runE2E } = require('../e2e-demo');
 const { createArchiver } = require('../archive');
 const { createBudgetGuard } = require('../budget');
+const { solveLevel } = require('../../validator/solver');
 const { createMockTransport } = require('./mock-transport');
+
+const SUPPORTED_MODELS = ['glm-5.3-flash', 'glm-4.7'];   // 与 pricing.json 对齐
 
 const MOCK_ARCHIVES = path.join(__dirname, '..', '..', 'archives', 'workbench-mock');
 const PRODUCTS_DIR = path.join(__dirname, 'products');
@@ -29,6 +32,36 @@ function getRuntime() {
     runtimeCache = loadRuntime(path.join(SPIKE, 'engine', 'dsl_runtime.js'));
   }
   return runtimeCache;
+}
+
+// Inspector 数据源（全部真实：档案记录 / 台账条目 / GT-1 重放 / 产品包元数据）
+function buildInspect(rr, simLedger, archiver, rt) {
+  const inspect = {};
+  inspect.budget = { spent: simLedger.totalSpentCNY, reserved: simLedger.reservedCNY,
+                     cap: simLedger.capCNY, entries: simLedger.entries.slice(-8) };
+  // 模型调用档案：每次尝试的 outcome/usage/Token 来源/时延（读档案文件，与档案页同源）
+  try {
+    inspect.calls = fs.readdirSync(archiver.briefDir).filter(f => f.endsWith('.json')).sort().map(f => {
+      const rec = JSON.parse(fs.readFileSync(path.join(archiver.briefDir, f), 'utf8'));
+      return { file: f, outcome: rec.outcome || null, usage: rec.usage || null,
+               estimate_tokens: rec.estimate_tokens || null, input_tokens_source: rec.input_tokens_source || null,
+               latency_ms: rec.latency_ms || null, http_status: rec.http_status || null };
+    });
+  } catch (e) { inspect.calls = []; }
+  // GT-1 逐关：成功时用求解器重放拿每关判定与步数（只读验证，不改闸门）；失败时用事件摘要
+  if (rr.ok && rr.candidate) {
+    inspect.solvability = rr.candidate.levels.map((lv, i) => {
+      const sr = solveLevel(rt.DSLRules, rr.candidate.mechanic, lv, { errProbe: rt.errProbe });
+      return { index: i + 1, verdict: sr.solvable === true ? 'PASS' : sr.solvable === false ? 'UNSAT' : 'UNKNOWN',
+               steps: sr.steps || null, reason: sr.reason || null };
+    });
+  } else {
+    inspect.solvability = (rr.events || []).filter(e => e.kind === 'solvability');
+  }
+  inspect.product = rr.ok && rr.product
+    ? { format: rr.product.format, meta: rr.product.meta, integrity: rr.product.integrity }
+    : null;
+  return inspect;
 }
 
 // 闸门节点视图（从事件流派生——展示当前节点/失败原因/重试次数/拦截原因）
@@ -88,6 +121,10 @@ async function generateViaWorkbench(opts) {
   const base = mt.matched ? mt.matched.id : 'free';
   const briefId = 'wb-' + base + '-' + Date.now().toString(36);
 
+  // 生成参数（曦批次一：模型选择 + 重试次数；白名单与 pricing.json 对齐）
+  const model = SUPPORTED_MODELS.includes(opts.model) ? opts.model : 'glm-5.3-flash';
+  const maxAttempts = Math.min(5, Math.max(1, parseInt(opts.maxAttempts, 10) || 3));
+
   // 注意：createArchiver 自带 briefId 子目录（briefDir = dir/briefId），dir 传 Mock 档案根即可
   const archiver = createArchiver({ dir: MOCK_ARCHIVES, briefId });
   const guard = createBudgetGuard({
@@ -97,10 +134,10 @@ async function generateViaWorkbench(opts) {
 
   const rt = getRuntime();
   const rr = await runE2E({
-    brief: briefText, briefId, model: 'glm-5.3-flash',
+    brief: briefText, briefId, model,
     transport: mt.transport,                       // Mock 通道（【mock】标注贯穿）
     archiver, DSLRules: rt.DSLRules, errProbe: rt.errProbe,
-    budgetGuard: guard, maxAttempts: 3,
+    budgetGuard: guard, maxAttempts,
     outDir: PRODUCTS_DIR
   });
 
@@ -120,12 +157,14 @@ async function generateViaWorkbench(opts) {
     spentCNY: rr.spentCNY || 0,                    // 模拟台账核销额（非真实费用）
     events: rr.events || [],
     stages: buildStages(rr),
+    inspect: buildInspect(rr, simLedger, archiver, rt),   // Inspector 真数据（曦批次一）
     budget,
     productId: rr.ok ? productId : null,
     productUrl: rr.ok ? '/preview/' + encodeURIComponent(productId) : null,
     productTitle: rr.ok && rr.product && rr.product.data && rr.product.data.mechanic ? rr.product.data.mechanic.title : null,
-    mocked: true,                                   // 如实标注：本通道恒为模拟生成
-    mockFallback: mt.fallback,                      // 自由 Brief 无匹配 → fallback 候选，如实上报
+    model, maxAttempts,                            // 参数回显
+    mocked: true,                                  // 如实标注：本通道恒为模拟生成
+    mockFallback: mt.fallback,                     // 自由 Brief 无匹配 → fallback 候选，如实上报
     matchedBrief: mt.matched ? { id: mt.matched.id, title: mt.matched.title, source: mt.matched.source } : null,
     archivesDir: path.join('archives', 'workbench-mock', briefId),
     reason: rr.reason || null

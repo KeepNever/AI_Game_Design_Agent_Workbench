@@ -1,7 +1,7 @@
 {
   "capCNY": 22,
   "currency": "CNY",
-  "totalSpentCNY": 0.2156,
+  "totalSpentCNY": 0.31682,
   "reservations": {
     "rsv-1794905280896-cc36e482": {
       "status": "settled",
@@ -350,6 +350,136 @@
       "ts": "2026-11-17T12:24:08.863Z",
       "meta": {
         "brief_id": "wb-tune-f-mwknzcgw",
+        "attempt": 2
+      }
+    },
+    "rsv-1794918587985-e3d0a110": {
+      "status": "settled",
+      "model": "glm-5.3-flash",
+      "estimate": 0.0104,
+      "ts": "2026-11-17T12:29:47.985Z",
+      "meta": {
+        "brief_id": "wb-tune-b-mwko6ma5",
+        "attempt": 1
+      }
+    },
+    "rsv-1794919010099-cc11f284": {
+      "status": "settled",
+      "model": "glm-5.3-flash",
+      "estimate": 0.0104,
+      "ts": "2026-11-17T12:36:50.099Z",
+      "meta": {
+        "brief_id": "wb-tune-e-mwkofnzg",
+        "attempt": 1
+      }
+    },
+    "rsv-1794919010393-8b5eebc8": {
+      "status": "settled",
+      "model": "glm-5.3-flash",
+      "estimate": 0.0104,
+      "ts": "2026-11-17T12:36:50.393Z",
+      "meta": {
+        "brief_id": "wb-free-mwkofo7q",
+        "attempt": 1
+      }
+    },
+    "rsv-1794919010682-3652eb53": {
+      "status": "settled",
+      "model": "glm-5.3-flash",
+      "estimate": 0.0104,
+      "ts": "2026-11-17T12:36:50.682Z",
+      "meta": {
+        "brief_id": "wb-tune-f-mwkofofs",
+        "attempt": 1
+      }
+    },
+    "rsv-1794919010846-bc1762c8": {
+      "status": "settled",
+      "model": "glm-5.3-flash",
+      "estimate": 0.0104,
+      "ts": "2026-11-17T12:36:50.846Z",
+      "meta": {
+        "brief_id": "wb-tune-f-mwkofofs",
+        "attempt": 2
+      }
+    },
+    "rsv-1794919011122-58ac8a5b": {
+      "status": "settled",
+      "model": "glm-5.3-flash",
+      "estimate": 0.0104,
+      "ts": "2026-11-17T12:36:51.122Z",
+      "meta": {
+        "brief_id": "wb-tune-a-mwkoforz",
+        "attempt": 1
+      }
+    },
+    "rsv-1794919012814-928616fc": {
+      "status": "settled",
+      "model": "glm-5.3-flash",
+      "estimate": 0.0104,
+      "ts": "2026-11-17T12:36:52.814Z",
+      "meta": {
+        "brief_id": "wb-tune-e-mwkofq2z",
+        "attempt": 1
+      }
+    },
+    "rsv-1794919013108-0d553a0b": {
+      "status": "settled",
+      "model": "glm-5.3-flash",
+      "estimate": 0.0104,
+      "ts": "2026-11-17T12:36:53.108Z",
+      "meta": {
+        "brief_id": "wb-tune-e-mwkofqb5",
+        "attempt": 1
+      }
+    },
+    "rsv-1794919013415-938254ce": {
+      "status": "settled",
+      "model": "glm-4.7",
+      "estimate": 0.046,
+      "ts": "2026-11-17T12:36:53.415Z",
+      "meta": {
+        "brief_id": "wb-tune-e-mwkofqjp",
+        "attempt": 1
+      }
+    },
+    "rsv-1794919013724-bb2d40c2": {
+      "status": "settled",
+      "model": "glm-5.3-flash",
+      "estimate": 0.0104,
+      "ts": "2026-11-17T12:36:53.724Z",
+      "meta": {
+        "brief_id": "wb-tune-a-mwkofqsa",
+        "attempt": 1
+      }
+    },
+    "rsv-1794919035843-263701ef": {
+      "status": "settled",
+      "model": "glm-5.3-flash",
+      "estimate": 0.0104,
+      "ts": "2026-11-17T12:37:15.843Z",
+      "meta": {
+        "brief_id": "wb-tune-e-mwkog7ul",
+        "attempt": 1
+      }
+    },
+    "rsv-1794919039739-43df041d": {
+      "status": "settled",
+      "model": "glm-5.3-flash",
+      "estimate": 0.0104,
+      "ts": "2026-11-17T12:37:19.739Z",
+      "meta": {
+        "brief_id": "wb-tune-f-mwkogaux",
+        "attempt": 1
+      }
+    },
+    "rsv-1794919040000-adb99266": {
+      "status": "settled",
+      "model": "glm-5.3-flash",
+      "estimate": 0.0104,
+      "ts": "2026-11-17T12:37:20.000Z",
+      "meta": {
+        "brief_id": "wb-tune-f-mwkogaux",
         "attempt": 2
       }
     }
@@ -1046,6 +1176,266 @@
       "ts": "2026-11-17T12:24:08.967Z",
       "type": "SETTLE",
       "reservationId": "rsv-1794918248863-034690ed",
+      "model": "glm-5.3-flash",
+      "usage": {
+        "prompt_tokens": 3500,
+        "completion_tokens": 1200
+      },
+      "costCNY": 0.00616,
+      "overrun": false,
+      "releasedEstimate": 0.0104
+    },
+    {
+      "ts": "2026-11-17T12:29:47.985Z",
+      "type": "RESERVE",
+      "reservationId": "rsv-1794918587985-e3d0a110",
+      "model": "glm-5.3-flash",
+      "estimate": 0.0104
+    },
+    {
+      "ts": "2026-11-17T12:29:48.096Z",
+      "type": "SETTLE",
+      "reservationId": "rsv-1794918587985-e3d0a110",
+      "model": "glm-5.3-flash",
+      "usage": {
+        "prompt_tokens": 3500,
+        "completion_tokens": 1200
+      },
+      "costCNY": 0.00616,
+      "overrun": false,
+      "releasedEstimate": 0.0104
+    },
+    {
+      "ts": "2026-11-17T12:36:50.101Z",
+      "type": "RESERVE",
+      "reservationId": "rsv-1794919010099-cc11f284",
+      "model": "glm-5.3-flash",
+      "estimate": 0.0104
+    },
+    {
+      "ts": "2026-11-17T12:36:50.209Z",
+      "type": "SETTLE",
+      "reservationId": "rsv-1794919010099-cc11f284",
+      "model": "glm-5.3-flash",
+      "usage": {
+        "prompt_tokens": 3500,
+        "completion_tokens": 1200
+      },
+      "costCNY": 0.00616,
+      "overrun": false,
+      "releasedEstimate": 0.0104
+    },
+    {
+      "ts": "2026-11-17T12:36:50.393Z",
+      "type": "RESERVE",
+      "reservationId": "rsv-1794919010393-8b5eebc8",
+      "model": "glm-5.3-flash",
+      "estimate": 0.0104
+    },
+    {
+      "ts": "2026-11-17T12:36:50.479Z",
+      "type": "SETTLE",
+      "reservationId": "rsv-1794919010393-8b5eebc8",
+      "model": "glm-5.3-flash",
+      "usage": {
+        "prompt_tokens": 3500,
+        "completion_tokens": 1200
+      },
+      "costCNY": 0.00616,
+      "overrun": false,
+      "releasedEstimate": 0.0104
+    },
+    {
+      "ts": "2026-11-17T12:36:50.682Z",
+      "type": "RESERVE",
+      "reservationId": "rsv-1794919010682-3652eb53",
+      "model": "glm-5.3-flash",
+      "estimate": 0.0104
+    },
+    {
+      "ts": "2026-11-17T12:36:50.767Z",
+      "type": "SETTLE",
+      "reservationId": "rsv-1794919010682-3652eb53",
+      "model": "glm-5.3-flash",
+      "usage": {
+        "prompt_tokens": 3500,
+        "completion_tokens": 1200
+      },
+      "costCNY": 0.00616,
+      "overrun": false,
+      "releasedEstimate": 0.0104
+    },
+    {
+      "ts": "2026-11-17T12:36:50.846Z",
+      "type": "RESERVE",
+      "reservationId": "rsv-1794919010846-bc1762c8",
+      "model": "glm-5.3-flash",
+      "estimate": 0.0104
+    },
+    {
+      "ts": "2026-11-17T12:36:50.932Z",
+      "type": "SETTLE",
+      "reservationId": "rsv-1794919010846-bc1762c8",
+      "model": "glm-5.3-flash",
+      "usage": {
+        "prompt_tokens": 3500,
+        "completion_tokens": 1200
+      },
+      "costCNY": 0.00616,
+      "overrun": false,
+      "releasedEstimate": 0.0104
+    },
+    {
+      "ts": "2026-11-17T12:36:51.122Z",
+      "type": "RESERVE",
+      "reservationId": "rsv-1794919011122-58ac8a5b",
+      "model": "glm-5.3-flash",
+      "estimate": 0.0104
+    },
+    {
+      "ts": "2026-11-17T12:36:51.216Z",
+      "type": "SETTLE",
+      "reservationId": "rsv-1794919011122-58ac8a5b",
+      "model": "glm-5.3-flash",
+      "usage": {
+        "prompt_tokens": 3500,
+        "completion_tokens": 1200
+      },
+      "costCNY": 0.00616,
+      "overrun": false,
+      "releasedEstimate": 0.0104
+    },
+    {
+      "ts": "2026-11-17T12:36:52.814Z",
+      "type": "RESERVE",
+      "reservationId": "rsv-1794919012814-928616fc",
+      "model": "glm-5.3-flash",
+      "estimate": 0.0104
+    },
+    {
+      "ts": "2026-11-17T12:36:52.913Z",
+      "type": "SETTLE",
+      "reservationId": "rsv-1794919012814-928616fc",
+      "model": "glm-5.3-flash",
+      "usage": {
+        "prompt_tokens": 3500,
+        "completion_tokens": 1200
+      },
+      "costCNY": 0.00616,
+      "overrun": false,
+      "releasedEstimate": 0.0104
+    },
+    {
+      "ts": "2026-11-17T12:36:53.108Z",
+      "type": "RESERVE",
+      "reservationId": "rsv-1794919013108-0d553a0b",
+      "model": "glm-5.3-flash",
+      "estimate": 0.0104
+    },
+    {
+      "ts": "2026-11-17T12:36:53.216Z",
+      "type": "SETTLE",
+      "reservationId": "rsv-1794919013108-0d553a0b",
+      "model": "glm-5.3-flash",
+      "usage": {
+        "prompt_tokens": 3500,
+        "completion_tokens": 1200
+      },
+      "costCNY": 0.00616,
+      "overrun": false,
+      "releasedEstimate": 0.0104
+    },
+    {
+      "ts": "2026-11-17T12:36:53.415Z",
+      "type": "RESERVE",
+      "reservationId": "rsv-1794919013415-938254ce",
+      "model": "glm-4.7",
+      "estimate": 0.046
+    },
+    {
+      "ts": "2026-11-17T12:36:53.506Z",
+      "type": "SETTLE",
+      "reservationId": "rsv-1794919013415-938254ce",
+      "model": "glm-4.7",
+      "usage": {
+        "prompt_tokens": 3500,
+        "completion_tokens": 1200
+      },
+      "costCNY": 0.0273,
+      "overrun": false,
+      "releasedEstimate": 0.046
+    },
+    {
+      "ts": "2026-11-17T12:36:53.724Z",
+      "type": "RESERVE",
+      "reservationId": "rsv-1794919013724-bb2d40c2",
+      "model": "glm-5.3-flash",
+      "estimate": 0.0104
+    },
+    {
+      "ts": "2026-11-17T12:36:53.819Z",
+      "type": "SETTLE",
+      "reservationId": "rsv-1794919013724-bb2d40c2",
+      "model": "glm-5.3-flash",
+      "usage": {
+        "prompt_tokens": 3500,
+        "completion_tokens": 1200
+      },
+      "costCNY": 0.00616,
+      "overrun": false,
+      "releasedEstimate": 0.0104
+    },
+    {
+      "ts": "2026-11-17T12:37:15.843Z",
+      "type": "RESERVE",
+      "reservationId": "rsv-1794919035843-263701ef",
+      "model": "glm-5.3-flash",
+      "estimate": 0.0104
+    },
+    {
+      "ts": "2026-11-17T12:37:15.973Z",
+      "type": "SETTLE",
+      "reservationId": "rsv-1794919035843-263701ef",
+      "model": "glm-5.3-flash",
+      "usage": {
+        "prompt_tokens": 3500,
+        "completion_tokens": 1200
+      },
+      "costCNY": 0.00616,
+      "overrun": false,
+      "releasedEstimate": 0.0104
+    },
+    {
+      "ts": "2026-11-17T12:37:19.740Z",
+      "type": "RESERVE",
+      "reservationId": "rsv-1794919039739-43df041d",
+      "model": "glm-5.3-flash",
+      "estimate": 0.0104
+    },
+    {
+      "ts": "2026-11-17T12:37:19.881Z",
+      "type": "SETTLE",
+      "reservationId": "rsv-1794919039739-43df041d",
+      "model": "glm-5.3-flash",
+      "usage": {
+        "prompt_tokens": 3500,
+        "completion_tokens": 1200
+      },
+      "costCNY": 0.00616,
+      "overrun": false,
+      "releasedEstimate": 0.0104
+    },
+    {
+      "ts": "2026-11-17T12:37:20.000Z",
+      "type": "RESERVE",
+      "reservationId": "rsv-1794919040000-adb99266",
+      "model": "glm-5.3-flash",
+      "estimate": 0.0104
+    },
+    {
+      "ts": "2026-11-17T12:37:20.129Z",
+      "type": "SETTLE",
+      "reservationId": "rsv-1794919040000-adb99266",
       "model": "glm-5.3-flash",
       "usage": {
         "prompt_tokens": 3500,

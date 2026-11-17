@@ -3,6 +3,9 @@
 'use strict';
 
 var selectedBrief = null;
+var lastInspect = null;      // 最近一次生成的 Inspector 真数据
+var lastResult = null;       // 最近一次生成结果（试玩嵌回/导出用）
+var savedResultHTML = null;  // 试玩前结果面板快照
 
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -93,12 +96,79 @@ var SLOT_META = [
 function buildStageNodes() {
   var ul = document.getElementById('stages');
   ul.innerHTML = SLOT_META.map(function (m, i) {
-    return '<li class="node ' + m.cls + ' n' + (i + 1) + '">' +
+    return '<li class="node ' + m.cls + ' n' + (i + 1) + '" data-idx="' + i + '" title="点击查看真实数据">' +
       '<span class="dot">·</span>' +
       '<div class="nhead"><span class="ico">' + m.ico + '</span>' + m.name + '</div>' +
       '<p class="detail">' + m.desc + '</p>' +
       '<div class="state">待执行</div></li>';
   }).join('');
+  ul.querySelectorAll('li').forEach(function (li) {
+    li.addEventListener('click', function () {
+      ul.querySelectorAll('li').forEach(function (x) { x.style.outline = ''; });
+      li.style.outline = '2px solid #9ab0ff';
+      renderInspector(Number(li.dataset.idx));
+    });
+  });
+}
+
+/* ── 右侧 Inspector：全部真数据 ── */
+function renderInspector(i) {
+  var m = SLOT_META[i];
+  var el = document.getElementById('inspector');
+  var head = '<div class="node-title" style="display:flex;align-items:center;gap:10px;margin-bottom:10px">' +
+    '<span class="ico" style="width:38px;height:38px;border-radius:11px;background:' +
+    (m.cls === 'blue' ? '#1d3a6e' : m.cls === 'purple' ? '#3c286e' : m.cls === 'cyan' ? '#123f44' : '#463311') +
+    ';display:grid;place-items:center;font-size:19px">' + m.ico + '</span>' +
+    '<div><b style="display:block">' + m.name + '</b><small class="' + (lastInspect ? 'ok' : 'muted') + '">' +
+    (lastInspect ? '● 来自最近一次生成（真实数据）' : '● 尚未生成') + '</small></div></div>';
+  var body = '';
+  if (!lastInspect) { el.innerHTML = head + '<p class="note">运行一次生成后，这里展示该节点的真实数据。</p>'; return; }
+  if (i === 0) {
+    body = '<p class="note">模拟台账（capCNY ' + esc(lastInspect.budget.cap) + '）</p>' +
+      '<p>已核销 <b>' + esc(lastInspect.budget.spent) + '</b> 元 · 占用中 ' + esc(lastInspect.budget.reserved) + ' 元</p>' +
+      '<ul class="ledger" style="max-height:none">' + (lastInspect.budget.entries || []).map(function (e) {
+        return '<li>[' + esc(e.type) + '] …' + esc((e.reservationId || '').slice(-8)) +
+          (e.costCNY !== undefined ? ' · ' + esc(e.costCNY) + ' 元' : '') + (e.estimate !== undefined ? ' · 预估 ' + esc(e.estimate) : '') + '</li>';
+      }).join('') + '</ul>';
+  } else if (i === 1) {
+    body = '<p class="note">模型：' + esc(lastResult.model) + ' · 共 ' + esc(lastResult.attempts) + ' 次调用（每次尝试都留档）</p>' +
+      (lastInspect.calls || []).map(function (c) {
+        return '<div class="budget-panel" style="margin:6px 0"><b class="ok">' + esc(c.outcome) + '</b>' +
+          '<div>usage: ' + (c.usage ? esc(c.usage.prompt_tokens) + ' in / ' + esc(c.usage.completion_tokens) + ' out' : '—') + '</div>' +
+          '<div class="note">Token 来源: ' + esc(c.input_tokens_source || '—') + ' · 估算 ' + esc(c.estimate_tokens) + ' · ' + esc(c.latency_ms) + 'ms</div></div>';
+      }).join('');
+  } else if (i === 2) {
+    var schemaEv = (lastResult.events || []).filter(function (e) { return e.kind === 'schema'; });
+    body = schemaEv.length
+      ? '<p class="note">拦截记录（错误清单已结构化回喂模型重试，原始档案在 ' + esc(lastResult.archivesDir) + '）：</p>' +
+        '<ul class="ledger" style="max-height:none">' + schemaEv.map(function (e) {
+          return '<li>第' + esc(e.attempt) + '回合 · ' + esc(e.errorCount) + ' 项错误 · ' + esc(e.outcome) + '</li>';
+        }).join('') + '</ul>'
+      : '<p class="status" style="display:inline-block">✓ 本轮全部通过，零拦截</p><p class="note">校验器按 Schema v1.2.1 全量闸门：结构必填 / 白名单 / 交叉引用 / LIMITS / 原型污染键。</p>';
+  } else if (i === 3) {
+    var sol = lastInspect.solvability || [];
+    body = '<p class="note">GT-1 三值判定：PASS / UNSAT（完整穷举）/ UNKNOWN（禁止改写为 UNSAT）</p>' +
+      (sol.length && sol[0].verdict ? '<ul class="ledger" style="max-height:none">' + sol.map(function (s) {
+        return '<li>关' + esc(s.index) + ' <b class="' + (s.verdict === 'PASS' ? 'ok' : 'bad') + '">' + esc(s.verdict) + '</b>' +
+          (s.steps ? ' · 最少 ' + esc(s.steps) + ' 步' : '') + '</li>';
+      }).join('') + '</ul>'
+      : '<ul class="ledger" style="max-height:none">' + sol.map(function (e) {
+          return '<li>第' + esc(e.attempt) + '回合 · ' + esc(e.detail || e.label) + '</li>';
+        }).join('') + '</ul>');
+  } else if (i === 4) {
+    var p = lastInspect.product;
+    body = p
+      ? '<div class="budget-panel"><b>' + esc(p.format) + '</b>' +
+        '<div>字节数: ' + esc(p.integrity.byteLength) + ' · JSON 往返: ' + (p.integrity.roundTripOk ? '<span class="ok">一致 ✓</span>' : '失败') + '</div>' +
+        '<div class="note">打包于 ' + esc(p.meta.packaged_at) + '</div>' +
+        '<div class="note">Brief: ' + esc(p.meta.brief_id) + ' · 模型: ' + esc(p.meta.model) + ' · Prompt: ' + esc(p.meta.prompt_version) + '</div></div>'
+      : '<p class="note">未到达（上游闸门拦截）。</p>';
+  } else {
+    body = '<p>档案目录：<br><span class="note">' + esc(lastResult.archivesDir) + '</span></p>' +
+      (lastResult.productUrl ? '<p>预览地址：<br><span class="note">' + esc(lastResult.productUrl) + '</span></p>' : '<p class="note">未落盘（闸门未全过）。</p>') +
+      (lastInspect.product ? '<p class="note">档案引用 ' + (lastInspect.product.meta.archive_refs || []).length + ' 份 · 每次尝试/失败/重试全留痕。</p>' : '');
+  }
+  el.innerHTML = head + body;
 }
 
 function resetStages() {
@@ -147,11 +217,19 @@ function generate() {
   fetch('/api/generate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ brief: brief })
+    body: JSON.stringify({
+      brief: brief,
+      model: document.getElementById('opt-model').value,
+      maxAttempts: Number(document.getElementById('opt-attempts').value)
+    })
   }).then(function (r) { return r.json(); }).then(function (d) {
+    lastInspect = d.inspect || null;
+    lastResult = d;
+    savedResultHTML = null;
     animateStages(d);
     renderEvents(d);
     renderResult(d);
+    renderInspector(0);
     btn.disabled = false;
     btn.textContent = '▶ 运行生成（完整闸门链）';
     loadGames();
@@ -190,7 +268,13 @@ function renderResult(d) {
       (d.fallback ? '<p><span class="badge-mock">mockFallback：自由 Brief 未匹配示例</span></p>'
                   : '<p><span class="badge-ok">匹配示例：' + esc(d.matchedBrief ? d.matchedBrief.title : '') + '</span></p>') +
       '<p>档案：' + esc(d.archivesDir) + '</p></div></div>' +
-      '<div class="result-actions"><a id="enter-preview" class="primary" style="display:block" href="' + esc(d.productUrl) + '">进入预览游玩 →</a></div>';
+      '<div class="result-actions">' +
+      '<button id="btn-embed">⛶ 画布内试玩</button>' +
+      '<button id="btn-export">⬇ 导出产物</button>' +
+      '<a id="enter-preview" class="primary" style="display:block;flex:1.2;text-align:center;line-height:34px" href="' + esc(d.productUrl) + '">进入预览页 →</a>' +
+      '</div>';
+    document.getElementById('btn-embed').addEventListener('click', function () { embedPlay(d.productUrl); });
+    document.getElementById('btn-export').addEventListener('click', function () { exportProduct(d.productId); });
   } else {
     status.textContent = '生成失败';
     status.className = 'status mock';
@@ -199,6 +283,37 @@ function renderResult(d) {
       '<p class="note">失败原因已入档案（' + esc(d.archivesDir || 'archives/workbench-mock/') + '）——Mock 与真实通道的失败结论互不混淆。</p>' +
       '<p class="note">管线画布上标红 ✗ 的节点即拦截位置。</p>';
   }
+}
+
+/* ── 画布内试玩：把预览页嵌进结果面板（CSP frame-src 'self' ✓）── */
+function embedPlay(url) {
+  savedResultHTML = document.getElementById('gen-result').innerHTML;
+  document.getElementById('result-status').textContent = '试玩中';
+  document.getElementById('gen-result').innerHTML =
+    '<iframe src="' + esc(url) + '" style="width:100%;height:420px;border:1px solid #273654;border-radius:10px;background:#080f20"></iframe>' +
+    '<div class="result-actions">' +
+    '<button id="btn-exit-play">⨯ 收起试玩</button>' +
+    '<a class="primary" style="display:block;flex:1;text-align:center;line-height:34px" href="' + esc(url) + '" target="_blank">新窗口打开（大屏）→</a>' +
+    '</div>';
+  document.getElementById('btn-exit-play').addEventListener('click', function () {
+    document.getElementById('gen-result').innerHTML = savedResultHTML;
+    document.getElementById('result-status').textContent = '生成成功（Mock）';
+    document.getElementById('btn-embed').addEventListener('click', function () { embedPlay(lastResult.productUrl); });
+    document.getElementById('btn-export').addEventListener('click', function () { exportProduct(lastResult.productId); });
+  });
+}
+
+/* ── 导出产物：product + meta 打包下载（曦批次一）── */
+function exportProduct(productId) {
+  fetch('/api/product/' + encodeURIComponent(productId)).then(function (r) { return r.json(); }).then(function (d) {
+    var blob = new Blob([JSON.stringify(d, null, 2)], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = productId + '-bundle.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  });
 }
 
 buildStageNodes();
