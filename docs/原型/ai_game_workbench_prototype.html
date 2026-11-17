@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 游戏生成工作台 · 高保真交互原型</title>
+<style>
+:root{--bg:#070b18;--panel:#10182b;--panel2:#141f37;--line:#263452;--muted:#8998b8;--text:#edf3ff;--blue:#4e8dff;--purple:#8561ff;--green:#22c985;--amber:#ffb43e;--cyan:#22d3df}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 55% -20%,#1c2a56 0,#080d1c 48%,#050914 100%);color:var(--text);font:14px/1.45 Inter,"PingFang SC","Microsoft YaHei",sans-serif;min-width:1100px}
+button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer;border:1px solid var(--line);background:#17223b;border-radius:9px;padding:9px 13px}button:hover{border-color:#6e83c7;background:#202e4d}.primary{background:linear-gradient(120deg,#5578ff,#8154ef);border:0;box-shadow:0 6px 24px #5d55ff44}.top{height:70px;display:flex;align-items:center;padding:0 22px;border-bottom:1px solid #26314d;background:#080d1bdc;gap:34px;position:sticky;top:0;z-index:5}.brand{display:flex;align-items:center;gap:12px;min-width:265px}.logo{width:43px;height:43px;border-radius:14px;background:linear-gradient(135deg,#536fff,#8c4fff);display:grid;place-items:center;font-size:24px;box-shadow:0 0 28px #625aff66}.brand b{font-size:18px;letter-spacing:.4px}.brand small{display:block;color:#91a0c0;font-size:11px;margin-top:2px}.nav{display:flex;gap:8px;height:100%;align-items:center}.nav button{height:100%;border:0;background:transparent;border-radius:0;color:#aab7d1;padding:0 18px}.nav button.active{color:#fff;background:linear-gradient(180deg,#25345d,#121b35);border-bottom:2px solid #7180ff}.topright{margin-left:auto;display:flex;align-items:center;gap:14px;color:#aebbd4}.pill{border:1px solid #176b55;background:#0c3029;color:#48e0a6;padding:6px 12px;border-radius:30px;font-size:12px}.layout{display:grid;grid-template-columns:270px minmax(560px,1fr) 250px;gap:12px;padding:13px;height:calc(100vh - 70px);min-height:790px}.panel{background:linear-gradient(180deg,#111a2eec,#0d1528f5);border:1px solid #273654;border-radius:13px;box-shadow:0 12px 38px #0005;overflow:hidden}.left{padding:16px 13px;display:flex;flex-direction:column;gap:14px}.section-title{font-weight:700;font-size:15px;display:flex;justify-content:space-between;align-items:center}.muted{color:var(--muted)}.search{width:100%;background:#0b1325;border:1px solid #263653;border-radius:8px;padding:10px 12px;outline:none}.categories{display:grid;gap:4px}.cat{display:flex;justify-content:space-between;padding:10px;border-radius:8px;color:#b9c5dc}.cat.active{background:#1b2c52;color:#8fb3ff;border-left:3px solid #557dff}.templates{display:grid;gap:8px}.template{display:flex;gap:10px;align-items:center;padding:8px;border:1px solid #273653;border-radius:10px;background:#111c32}.thumb{width:58px;height:49px;border-radius:8px;background:linear-gradient(135deg,#183f77,#5833a1);display:grid;place-items:center;font-size:24px}.template b{display:block;font-size:13px}.template small{color:#91a0bd;font-size:11px}.promo{margin-top:auto;padding:15px;border-radius:11px;background:linear-gradient(120deg,#5428a5,#152e67);font-weight:700}.promo small{display:block;color:#c6c5ff;font-weight:400;margin-top:5px}
+.center{display:flex;flex-direction:column;gap:12px;min-width:0}.toolbar{height:55px;padding:0 15px;display:flex;align-items:center;gap:14px}.toolbar strong{font-size:15px}.toolbar .save{color:#36d99b;font-size:12px}.toolbar .spacer{flex:1}.canvas{height:calc(100% - 295px);min-height:390px;position:relative;background-color:#080f20;background-image:radial-gradient(#263555 1px,transparent 1px);background-size:19px 19px;overflow:hidden}.canvas-label{position:absolute;left:18px;top:14px;color:#647596;font-size:10px;letter-spacing:1.6px}.wires{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.wire{fill:none;stroke:#6878f7;stroke-width:2.2;filter:drop-shadow(0 0 4px #5d6cff88)}.node{position:absolute;width:190px;min-height:105px;border:1px solid #527bff;border-radius:13px;background:linear-gradient(145deg,#192847,#111b31);box-shadow:0 10px 30px #0008,0 0 18px #397aff22;padding:13px;cursor:pointer;transition:.18s}.node:hover,.node.selected{transform:translateY(-3px);box-shadow:0 0 0 2px #9ab0ff,0 12px 32px #0009}.node .nhead{display:flex;align-items:center;gap:9px;font-weight:700}.node .ico{width:29px;height:29px;border-radius:9px;background:#263c72;display:grid;place-items:center;font-size:15px}.node p{font-size:11px;color:#9eacc8;margin:8px 0}.node .state{font-size:11px;color:#38dda1}.node .dot{position:absolute;right:10px;top:10px;width:17px;height:17px;border-radius:50%;background:#19c985;color:#06251b;display:grid;place-items:center;font-size:11px}.node.purple{border-color:#9865ff}.node.purple .ico{background:#3c286e}.node.cyan{border-color:#20c7d6}.node.amber{border-color:#eaa632}.node.blue{border-color:#448bff}.node.running{border-color:#8a69ff;box-shadow:0 0 22px #765cff66}.node.running .dot{background:#8b73ff;color:white}
+.n1{left:6%;top:17%}.n2{left:36%;top:12%}.n3{left:68%;top:17%}.n4{left:25%;top:58%}.n5{left:57%;top:61%}.n6{left:78%;top:60%;width:170px}
+.canvas-tools{position:absolute;right:15px;bottom:15px;display:grid;gap:6px}.canvas-tools button{padding:7px;background:#121d35dd}.bottom{display:grid;grid-template-columns:1fr 1.22fr .95fr;gap:12px;height:225px}.subpanel{padding:13px;min-width:0}.subhead{display:flex;align-items:center;justify-content:space-between;font-weight:700;margin-bottom:10px}.logs{display:grid;gap:6px;font-size:11px;color:#bdc8dd}.log{display:flex;gap:9px}.log time{color:#7585a6}.ok{color:#2cdb9c}.preview{height:158px;border-radius:10px;background:radial-gradient(ellipse at 50% 100%,#173a76,#0a1431 70%);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:13px;position:relative;overflow:hidden}.preview:before{content:"";position:absolute;width:250px;height:120px;background:#4436c9;filter:blur(65px);opacity:.35;bottom:-60px}.sequence{display:flex;gap:18px;z-index:1}.tile{width:53px;height:53px;border-radius:12px;display:grid;place-items:center;font-size:25px;font-weight:800;box-shadow:0 0 22px currentColor;cursor:pointer;border:1px solid #ffffff55}.tile:nth-child(1){background:#176bd8;color:#cce6ff}.tile:nth-child(2){background:#7436d8;color:#f0d9ff}.tile:nth-child(3){background:#df941a;color:#fff0c9}.preview small{z-index:1;color:#dce7ff}.result{display:flex;gap:10px;align-items:center}.result-art{width:80px;height:68px;border-radius:9px;background:linear-gradient(135deg,#0b4c88,#7d43b8);display:grid;place-items:center;font-size:27px}.result b{font-size:12px}.result p{font-size:11px;color:#a4b1ca;margin:5px 0}.result-actions{display:flex;gap:8px;margin-top:12px}.result-actions button{flex:1;font-size:11px;padding:8px}
+.right{display:flex;flex-direction:column}.tabs{display:flex;border-bottom:1px solid #283654}.tabs button{flex:1;border:0;border-radius:0;background:transparent;color:#91a0bc}.tabs button.active{color:#8caaff;border-bottom:2px solid #6c7fff}.inspector{padding:15px;overflow:auto}.node-title{display:flex;align-items:center;gap:10px}.node-title .ico{width:40px;height:40px;border-radius:12px;background:#30265e;display:grid;place-items:center;font-size:20px}.node-title b{display:block}.node-title small{color:#32d99b}.desc{color:#9eacc8;font-size:12px;margin:12px 0 17px}.field{margin:14px 0}.field label{display:block;color:#aab8d2;font-size:11px;margin-bottom:7px}.field select,.field input,.field textarea{width:100%;background:#0a1224;border:1px solid #293958;border-radius:8px;padding:9px;outline:none}.field textarea{height:70px;resize:vertical}.json{font:11px/1.5 ui-monospace,monospace;background:#080f1e;border:1px solid #293653;padding:10px;border-radius:8px;color:#b6c8ed;white-space:pre-wrap}.status{padding:7px 9px;border-radius:7px;background:#0e2e28;color:#42d9a2;font-size:11px;display:inline-block}
+@media(max-width:1250px){.layout{grid-template-columns:230px minmax(500px,1fr) 220px}.node{width:165px}.n6{width:150px}.bottom{grid-template-columns:1fr 1fr}.bottom .result-panel{display:none}}
+</style>
+</head>
+<body>
+<header class="top">
+ <div class="brand"><div class="logo">🎮</div><div><b>AI 游戏生成工作台</b><small>创意构思 · 游戏生成 · 质量验证</small></div></div>
+ <nav class="nav"><button class="active">⌂ 工作台</button><button>▦ 生成档案</button><button>⬡ 预算管理</button></nav>
+ <div class="topright"><span class="pill">● Mock 模式</span><span>剩余预算：<b>¥21.82</b></span><button>导出项目</button></div>
+</header>
+<div class="layout">
+ <aside class="panel left">
+  <div class="section-title">项目与资产库 <span class="muted">⌄</span></div>
+  <input class="search" placeholder="⌕ 搜索游戏模板...">
+  <div class="categories">
+   <div class="cat active">▦ 全部模板 <span>20</span></div><div class="cat">♧ 益智解谜 <span>6</span></div><div class="cat">⚒ 动作冒险 <span>5</span></div><div class="cat">◉ 休闲益智 <span>4</span></div><div class="cat">♜ 策略塔防 <span>3</span></div><div class="cat">♙ 角色扮演 <span>2</span></div>
+  </div>
+  <div class="section-title">推荐模板 <span class="muted">查看全部 →</span></div>
+  <div class="templates">
+   <div class="template"><div class="thumb">🧊</div><div><b>按序踩灯</b><small>按照顺序点击亮灯</small></div></div>
+   <div class="template"><div class="thumb">📦</div><div><b>推箱子</b><small>移动箱子到目标位置</small></div></div>
+   <div class="template"><div class="thumb">🃏</div><div><b>记忆翻牌</b><small>记住并匹配卡片</small></div></div>
+  </div>
+  <div class="promo">用 AI，创造无限可能<small>从一个想法开始生成游戏</small></div>
+ </aside>
+ <main class="center">
+  <div class="panel toolbar"><strong>项目：按序踩灯　⌄</strong><span class="save">● 已保存 · 本地演示</span><div class="spacer"></div><button title="撤销">↶</button><button title="重做">↷</button><button>100% ⌄</button><button class="primary" id="run">▶ 运行生成</button></div>
+  <section class="panel canvas">
+   <div class="canvas-label">GENERATION PIPELINE / FIXED SIX-STAGE FLOW</div>
+   <svg class="wires" viewBox="0 0 1000 520" preserveAspectRatio="none">
+    <path class="wire" d="M235 145 C300 145 300 115 360 115"/><path class="wire" d="M550 115 C620 115 620 145 680 145"/><path class="wire" d="M775 205 C775 290 390 300 390 350"/><path class="wire" d="M480 395 C550 395 550 395 570 395"/><path class="wire" d="M760 395 C810 395 820 380 840 380"/>
+   </svg>
+   <div class="node blue n1" data-node="需求输入"><span class="dot">✓</span><div class="nhead"><span class="ico">☷</span>需求输入</div><p>解析游戏需求与约束</p><div class="state">✓ 已完成</div></div>
+   <div class="node purple n2" data-node="模型调用"><span class="dot">✓</span><div class="nhead"><span class="ico">✧</span>模型调用</div><p>生成游戏方案与结构</p><div class="state">✓ Mock 已完成</div></div>
+   <div class="node cyan n3" data-node="Schema 校验"><span class="dot">✓</span><div class="nhead"><span class="ico">⬡</span>Schema 校验</div><p>结构合法性检查</p><div class="state">✓ 已通过</div></div>
+   <div class="node amber n4" data-node="GT-1 质量闸门"><span class="dot">✓</span><div class="nhead"><span class="ico">◇</span>GT-1 质量闸门</div><p>关键规则与质量检查</p><div class="state">✓ 已通过</div></div>
+   <div class="node purple n5" data-node="产品包组装"><span class="dot">✓</span><div class="nhead"><span class="ico">⬡</span>产品包组装</div><p>组装可运行游戏产物</p><div class="state">✓ 已完成</div></div>
+   <div class="node blue n6" data-node="归档与预览注册"><span class="dot">✓</span><div class="nhead"><span class="ico">◉</span>归档与预览注册</div><p>生成预览入口</p><div class="state">✓ 已注册</div></div>
+   <div class="canvas-tools"><button>⌕</button><button>⊖</button><button>⛶</button></div>
+  </section>
+  <div class="bottom">
+   <section class="panel subpanel"><div class="subhead">生成过程日志 <span class="muted">实时事件（演示）</span></div><div class="logs" id="logs"><div class="log"><time>10:24:33</time><span class="ok">●</span>需求解析完成</div><div class="log"><time>10:24:35</time><span class="ok">●</span>Mock 模型生成成功</div><div class="log"><time>10:24:37</time><span class="ok">●</span>Schema 校验通过</div><div class="log"><time>10:24:39</time><span class="ok">●</span>GT-1 质量闸门通过</div><div class="log"><time>10:24:41</time><span class="ok">●</span>产品包组装完成</div><div class="log"><time>10:24:43</time><span class="ok">●</span>预览注册完成</div></div></section>
+   <section class="panel subpanel"><div class="subhead">游戏预览 <span class="status">可试玩</span></div><div class="preview"><small id="gameHint">按照顺序点击亮灯：1 → 3 → 2</small><div class="sequence"><button class="tile" data-v="1">1</button><button class="tile" data-v="3">3</button><button class="tile" data-v="2">2</button></div><small id="gameStatus">点击数字开始试玩</small></div></section>
+   <section class="panel subpanel result-panel"><div class="subhead">生成结果 <span class="status">Mock 示例</span></div><div class="result"><div class="result-art">🎮</div><div><b>按序踩灯</b><p>产物类型：可预览链接</p><p>真实 API：尚未接入</p></div></div><div class="result-actions"><button>查看详情</button><button class="primary">进入预览 →</button></div></section>
+  </div>
+ </main>
+ <aside class="panel right">
+  <div class="tabs"><button class="active" id="tabNode">节点属性</button><button id="tabProject">项目配置</button></div>
+  <div class="inspector" id="inspector"><div class="node-title"><span class="ico">✧</span><div><b id="inspectName">模型调用</b><small>● Mock 已完成</small></div></div><p class="desc" id="inspectDesc">调用模型生成游戏方案，并输出结构化结果。当前展示 Mock 通道，不代表真实 API 已联调。</p><div class="field"><label>执行方式</label><select><option>Mock 模型</option><option disabled>真实 API（待接入）</option></select></div><div class="field"><label>生成风格</label><select><option>创意优先</option><option>规则优先</option></select></div><div class="field"><label>最大重试次数</label><input type="number" value="3" min="0" max="5"></div><div class="field"><label>输出结构预览</label><div class="json">{
+  "gameType": "puzzle",
+  "mechanic": "sequence",
+  "difficulty": "easy"
+}</div></div></div>
+ </aside>
+</div>
+<script>
+const descriptions={
+"需求输入":"接收游戏 Brief，解析玩法目标、输入约束与验收要求。当前原型使用预置项目数据。",
+"模型调用":"调用模型生成游戏方案与结构化候选。当前仅展示 Mock 通道，真实 API 尚未联调。",
+"Schema 校验":"检查候选结果是否符合既定数据结构，阻止不合法结构进入后续步骤。",
+"GT-1 质量闸门":"按照项目既定质量规则检查关键字段与玩法约束，不通过时应阻断组装。",
+"产品包组装":"将通过检查的结果组装为可运行游戏产品包。",
+"归档与预览注册":"记录生成档案并注册预览入口。当前页面仅作交互演示。"
+};
+document.querySelectorAll('.node').forEach(n=>n.addEventListener('click',()=>{
+ document.querySelectorAll('.node').forEach(x=>x.classList.remove('selected'));n.classList.add('selected');
+ const name=n.dataset.node;document.getElementById('inspectName').textContent=name;document.getElementById('inspectDesc').textContent=descriptions[name];
+}));
+document.getElementById('run').addEventListener('click',()=>{
+ const nodes=[...document.querySelectorAll('.node')],logs=document.getElementById('logs');
+ logs.innerHTML='';nodes.forEach(n=>{n.classList.remove('selected');n.querySelector('.dot').textContent='·';n.querySelector('.dot').style.background='#8a73ff';n.querySelector('.state').textContent='等待执行';n.querySelector('.state').style.color='#a9b7d2'});
+ const names=['需求输入','模型调用','Schema 校验','GT-1 质量闸门','产品包组装','归档与预览注册'];let i=0;
+ const tick=()=>{if(i>=nodes.length){return}const n=nodes[i];n.classList.add('running');n.querySelector('.dot').textContent='↻';n.querySelector('.state').textContent='演示执行中…';setTimeout(()=>{n.classList.remove('running');n.querySelector('.dot').textContent='✓';n.querySelector('.dot').style.background='#19c985';n.querySelector('.state').textContent='✓ 演示完成';n.querySelector('.state').style.color='#38dda1';const d=document.createElement('div');d.className='log';d.innerHTML='<time>演示</time><span class="ok">●</span>'+names[i]+'：模拟完成';logs.appendChild(d);i++;tick()},500)};
+ tick();
+});
+let expected=[1,3,2],step=0;
+document.querySelectorAll('.tile').forEach(b=>b.addEventListener('click',()=>{const v=Number(b.dataset.v);if(v===expected[step]){step++;document.getElementById('gameStatus').textContent=step===3?'完成！挑战成功。':'正确，继续点击';if(step===3){step=0}}else{step=0;document.getElementById('gameStatus').textContent='顺序错误，请重新开始';}}));
+document.getElementById('tabProject').addEventListener('click',()=>{document.getElementById('tabProject').classList.add('active');document.getElementById('tabNode').classList.remove('active');document.getElementById('inspector').innerHTML='<b>项目配置</b><p class="desc">当前项目：按序踩灯</p><div class="field"><label>项目名称</label><input value="按序踩灯"></div><div class="field"><label>游戏类型</label><select><option>益智解谜</option></select></div><div class="field"><label>项目状态</label><span class="status">本地 Mock 示例</span></div><p class="desc">此处仅展示项目配置入口，尚未连接真实项目持久化服务。</p>';});
+document.getElementById('tabNode').addEventListener('click',()=>location.reload());
+</script>
+</body></html>
