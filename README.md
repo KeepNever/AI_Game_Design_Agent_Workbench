@@ -16,7 +16,7 @@
 | **M3 运行时与工作台** | 🔶 进行中（三步已落地） | Runtime 接入桥 · GT-2a 逐步观测断言 · 最小预览页 · **最小工作台 MVP** | 8 + 4 项测试；浏览器通关实测 |
 | **端到端闭环** | ✅ 打通（Mock 通道） | 候选 → 五道闸门 → 产品包 → 预览页 → 键盘 13 步通关 | 浏览器实测截图与事件流档案 |
 
-**测试规模：150 项自动化测试全绿**（M0 31 / M1 18 / M2 68 / M3 8 / 端到端 4 / 工作台 8 / 浏览器冒烟 13）。
+**测试规模：148 项自动化测试全绿**（M0 31 / M1 18 / M2 68 / M3 8 / 端到端 4 / 工作台 10 / 浏览器冒烟 9）。数字为 2026-11-18 实跑复核口径（139 项 Node + 9 项 Edge 冒烟）。
 
 **如实边界**：真实模型能否稳定产出过闸门的 JSON **未验证**（M1 联调待密钥）；Mock 通道候选为注入产物（页面常驻 MOCK 徽章，与真实结论物理分离——档案、台账、产品目录三重隔离）；3 个独立验证样本按纪律隔离，未参与任何调优。
 
@@ -62,7 +62,7 @@ node validator/m2-tests.js             # M2 校验/求解     32 ✓
 node pipeline/m2-loop-tests.js         # M2 闭环          36 ✓
 node m3/m3-tests.js                    # M3 Runtime/GT-2a  8 ✓
 node pipeline/e2e-tests.js             # 端到端闭环        4 ✓
-node m3/workbench/workbench-tests.js   # 工作台编排        8 ✓
+node m3/workbench/workbench-tests.js   # 工作台编排        10 ✓
 
 # 启动工作台（默认 Mock 通道，页面有常驻 MOCK 徽章）
 node m3/preview/preview-server.js
@@ -70,7 +70,7 @@ node m3/preview/preview-server.js
 # → http://127.0.0.1:8792/preview/gameA_推箱   直接玩四机制构造样本
 ```
 
-浏览器冒烟（需本机 Edge）：`node m3/workbench/workbench-smoke.js`。
+浏览器冒烟（需本机 Edge，先起预览服务）：`node m3/workbench/workbench-smoke.js` → 9 ✓
 
 ---
 
@@ -102,7 +102,7 @@ node m3/preview/preview-server.js
 | 11-12 | S4 签收；G1 批准开工；M0 沙箱安全边界（数据通道返工：脚本注入 → fetch JSON + 受控 postMessage） |
 | 11-13 | M0 签收闭合（浏览器实测抓出 3 个 Node 测试盲区）；M1 骨架（Prompt/适配层/档案） |
 | 11-16 | M2 全量落地并签收：校验器/GT-1/重试闭环/预算硬闸 v4（预留-核销-释放+跨进程锁）/GLM Tokenizer（113 项测试） |
-| 11-17 | M3 三步落地 + 端到端闭环（Mock）+ 最小工作台 MVP（150 项测试）；GitHub 首次入库 |
+| 11-17 | M3 三步落地 + 端到端闭环（Mock）+ 最小工作台 MVP（148 项测试，11-18 实跑复核）；GitHub 首次入库 |
 
 ---
 
@@ -126,9 +126,12 @@ node m3/preview/preview-server.js
 
 ## 下一步
 
-1. **M1 真实 API 联调**（待密钥）：真实 Brief 生成 → Tokenizer 计数 vs `usage.prompt_tokens` 对照 → 7 个调优样本试跑（费用计入 22 元总预算）；
-2. **M3 收口**：真实生成产物走完整链路进预览页（M0+M2 双闸门下运行）、生成过程实时流式展示；
-3. **GT-2a 断言库扩展**：随真实产物的新机制逐步补充。
+> 交接口径（2026-11-18 校准）：批次二交 Hy4 Flash 主力开发。核心链路（预算状态机 / 生成闸门 / Mock-真实隔离 / 产品包组装）小步改、测试过再提交，验证标准不降。新会话接手先读 `.workbuddy/memory/MEMORY.md` 与 `2026-11-18.md`，以实跑为准、不以快照为准。
+
+1. **工作台批次二**（下一开发目标，交 Hy4 Flash）：生成档案页 + 预算管理页；把已有的 M1 生成档案、M2 预算台账做成前端界面，沿用 Mock 通道，不改核心链路，148 项测试基线不得掉、双台账隔离不得破；
+2. **M1 真实 API 联调**（待密钥）：真实 Brief 生成 → Tokenizer 计数 vs `usage.prompt_tokens` 对照 → 7 个调优样本试跑（费用计入 22 元总预算）；
+3. **M3 收口**：真实生成产物走完整链路进预览页（M0+M2 双闸门下运行）、生成过程实时流式展示；
+4. **GT-2a 断言库扩展**：随真实产物的新机制逐步补充。
 
 ---
 
